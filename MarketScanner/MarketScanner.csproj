@@ -54,10 +54,12 @@
     <Compile Include="Types\Dividends.cs" />
     <Compile Include="Types\HistoryStockPrice.cs" />
     <Compile Include="Types\Option.cs" />
+    <Compile Include="Types\OptionMatrix.cs" />
     <Compile Include="Types\Statistics.cs" />
     <Compile Include="Types\Stats.cs" />
     <Compile Include="Types\Stock.cs" />
     <Compile Include="Types\Symbols.cs" />
+    <Compile Include="Types\Trade.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

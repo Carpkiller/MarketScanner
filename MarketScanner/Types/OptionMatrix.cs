@@ -2,7 +2,7 @@
 
 namespace MarketScanner.Types
 {
-    public class Option
+    public class OptionMatrixRow
     {
         public string Underlaying { get; set; }
         public string Optionsymbol { get; set; }
@@ -10,12 +10,8 @@ namespace MarketScanner.Types
         public DateTime ExpirationDate { get; set; }
         public DateTime QuoteDate { get; set; }
         public double Strike { get; set; }
-        public string Last { get; set; }
-        public double Bid { get; set; }
-        public double Ask { get; set; }
-        public string Volume { get; set; }
-        public string OpenInterest { get; set; }
-        public double Delta { get; set; }
+        public Option Call { get; set; }
+        public Option Put { get; set; }
         public double StockPrice { get; set; }
     }
 }
