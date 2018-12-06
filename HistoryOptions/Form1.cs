@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Windows.Forms;
 using MarketScanner;
 using MarketScanner.Types;
@@ -18,8 +19,16 @@ namespace HistoryOptions
         public Form1()
         {
             InitializeComponent();
+            comboBox1.DataSource = LoadSymboly();
             loading = false;
             jadro = new Core();
+        }
+
+        private List<string> LoadSymboly()
+        {
+            var files = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.csv");
+
+            return files.Select(file => file.Split('\\').Last().Split('.').First()).ToList();
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -155,7 +164,7 @@ namespace HistoryOptions
 
         private List<Option> LoadOptionData()
         {
-            var data = File.ReadAllLines(textBox1.Text + ".csv");
+            var data = File.ReadAllLines(comboBox1.SelectedItem + ".csv");
 
             var optionData = new List<Option>();
 
@@ -199,6 +208,25 @@ namespace HistoryOptions
         private void button2_Click(object sender, EventArgs e)
         {
             textBox2.Text = jadro.PocitajStrategiu1(LoadOptionData());
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            textBox2.Text = jadro.PocitajStrategiu2(LoadOptionData());}
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            textBox2.Text = jadro.PocitajStrategiu3(LoadOptionData());
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            textBox2.Text = jadro.PocitajStrategiu4(LoadOptionData());
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            textBox2.Text = jadro.PocitajStrategiu5(LoadOptionData());
         }
     }
 }
