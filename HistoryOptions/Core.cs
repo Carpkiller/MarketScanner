@@ -32,7 +32,7 @@ namespace HistoryOptions
 
                 if (!obchody.Any())
                 {
-                    var hodnota = GetHodnotaStraddleBuy(optionMatrix, atmRow.Strike);
+                    var hodnota = MarketStrategies.GetHodnotaStraddleBuy(optionMatrix, atmRow.Strike);
                     var obchod = new Trade()
                     {
                         OpenDate = obchDen,
@@ -49,7 +49,7 @@ namespace HistoryOptions
                 {
                     var obchod = obchody.Last();
                     var obchodOptionMatrix = GetOptionMatrix(optionData.Where(x => x.QuoteDate == obchDen && x.ExpirationDate == obchod.ExpirationDate).ToList());
-                    var hodnota = GetHodnotaStraddleSell(obchodOptionMatrix, obchod.Strike);
+                    var hodnota = MarketStrategies.GetHodnotaStraddleSell(obchodOptionMatrix, obchod.Strike);
 
                     if (Math.Abs((obchod.OpenPrice * 100) + (hodnota*100)) > obchod.OpenPrice * 100*0.1)
                     {
@@ -57,7 +57,7 @@ namespace HistoryOptions
                         obchod.ClosePrice = hodnota;
                         obchod.CloseStockPrice = atmRow.StockPrice;
 
-                        hodnota = GetHodnotaStraddleBuy(optionMatrix, atmRow.Strike);
+                        hodnota = MarketStrategies.GetHodnotaStraddleBuy(optionMatrix, atmRow.Strike);
                         var obchodNew = new Trade()
                         {
                             OpenDate = obchDen,
@@ -83,7 +83,7 @@ namespace HistoryOptions
             return result;
         }
 
-        private int GetDeltaStrike(List<Option> optionMatrix)
+        private int GetDeltaStrike(List<Option> optionMatrix, double hodota = 0.5)
         {
             double previousDelta = 1;
             int index = 0;
@@ -91,36 +91,16 @@ namespace HistoryOptions
 
             foreach (var option in optionMatrix)
             {
-                if (Math.Abs(option.Delta - 0.5) < previousDelta)
+                if (Math.Abs(Math.Abs(option.Delta) - hodota) < previousDelta)
                 {
                     index = i;
-                    previousDelta = Math.Abs(option.Delta - 0.5);
+                    previousDelta = Math.Abs(Math.Abs(option.Delta) - hodota);
                 }
 
                 i++;
             }
 
             return index;
-        }
-
-        private double GetHodnotaStraddleBuy(List<OptionMatrixRow> optionData, double strike)
-        {
-            double result = 0;
-            // ask
-            result = ((optionData.Single(x => x.Strike == strike).Call.Ask + optionData.Single(x => x.Strike == strike).Call.Bid) / 2) +
-                     ((optionData.Single(x => x.Strike == strike).Put.Ask + optionData.Single(x => x.Strike == strike).Put.Bid) / 2);
-
-            return result;
-        }
-
-        private double GetHodnotaStraddleSell(List<OptionMatrixRow> optionData, double strike)
-        {
-            double result = 0;
-            // bid
-            result = ((optionData.Single(x => x.Strike == strike).Call.Ask + optionData.Single(x => x.Strike == strike).Call.Bid) / 2) +
-                     ((optionData.Single(x => x.Strike == strike).Put.Ask + optionData.Single(x => x.Strike == strike).Put.Bid) / 2);
-
-            return result*(-1);
         }
 
         private List<OptionMatrixRow> GetOptionMatrix(List<Option> data)
@@ -202,7 +182,7 @@ namespace HistoryOptions
                  //   && vixHodnoty.Single(x => x.date == obchDen.ToString("yyyy-MM-dd")).open < 25
                     )
                 {
-                    var hodnota = GetHodnotaStraddleSell(optionMatrix, atmRow.Strike);
+                    var hodnota = MarketStrategies.GetHodnotaStraddleSell(optionMatrix, atmRow.Strike);
                     var obchod = new Trade()
                     {
                         OpenDate = obchDen,
@@ -219,7 +199,7 @@ namespace HistoryOptions
                 {
                     var obchod = obchody.Last();
                     // var obchodOptionMatrix = GetOptionMatrix(optionData.Where(x => x.QuoteDate == obchDen && x.ExpirationDate == obchod.ExpirationDate).ToList());
-                    var hodnota = GetHodnotaStraddleBuy(optionMatrix, obchod.Strike);
+                    var hodnota = MarketStrategies.GetHodnotaStraddleBuy(optionMatrix, obchod.Strike);
 
                     obchod.CloseDate = obchDen;
                     obchod.ClosePrice = hodnota;
@@ -259,7 +239,7 @@ namespace HistoryOptions
                     //&& vixHodnoty.Single(x => x.date == obchDen.ToString("yyyy-MM-dd")).open < 13
                     )
                 {
-                    var hodnota = GetHodnotaStraddleSell(optionMatrix, atmRow.Strike);
+                    var hodnota = MarketStrategies.GetHodnotaStraddleSell(optionMatrix, atmRow.Strike);
                     var obchod = new Trade()
                     {
                         OpenDate = obchDen,
@@ -276,7 +256,7 @@ namespace HistoryOptions
                 {
                     var obchod = obchody.Last();
                     var obchodOptionMatrix = GetOptionMatrix(optionData.Where(x => x.QuoteDate == obchDen && x.ExpirationDate == obchod.ExpirationDate).ToList());
-                    var hodnota = GetHodnotaStraddleBuy(obchodOptionMatrix, obchod.Strike);
+                    var hodnota = MarketStrategies.GetHodnotaStraddleBuy(obchodOptionMatrix, obchod.Strike);
 
                     obchod.CloseDate = obchDen;
                     obchod.ClosePrice = hodnota;
@@ -340,7 +320,7 @@ namespace HistoryOptions
                     && vixHodnoty.Single(x => x.date == obchDen.ToString("yyyy-MM-dd")).open < VixMax
                     )
                 {
-                    var hodnota = GetHodnotaStraddleSell(optionMatrix, atmRow.Strike);
+                    var hodnota = MarketStrategies.GetHodnotaStraddleSell(optionMatrix, atmRow.Strike);
                     var obchod = new Trade()
                     {
                         OpenDate = obchDen,
@@ -361,7 +341,7 @@ namespace HistoryOptions
                     }
                     var obchod = obchody.Last();
                     var obchodOptionMatrix = GetOptionMatrix(optionData.Where(x => x.QuoteDate == obchDen && x.ExpirationDate == obchod.ExpirationDate).ToList());
-                    var hodnota = GetHodnotaStraddleBuy(obchodOptionMatrix, obchod.Strike);
+                    var hodnota = MarketStrategies.GetHodnotaStraddleBuy(obchodOptionMatrix, obchod.Strike);
 
                     if (Math.Abs((obchod.OpenPrice * 100) + (hodnota * 100)) > obchod.OpenPrice * 100 * 0.1 
                         || IsLastTradingDayOfContract(optionData, obchod.ExpirationDate, obchDen))
@@ -375,7 +355,7 @@ namespace HistoryOptions
                           //  && vixHodnoty.Single(x => x.date == obchDen.ToString("yyyy-MM-dd")).open < VixMax
                             )
                         {
-                            hodnota = GetHodnotaStraddleSell(optionMatrix, atmRow.Strike);
+                            hodnota = MarketStrategies.GetHodnotaStraddleSell(optionMatrix, atmRow.Strike);
                             var obchodNew = new Trade
                             {
                                 OpenDate = obchDen,
@@ -421,7 +401,7 @@ namespace HistoryOptions
         {
             string result = "";
             var vixHodnoty = LoadVixHistoryStockPrice();
-            int VixMax = 14;
+            int VixMax = 25;
 
             var obchodneDni = optionData.Select(x => x.QuoteDate).Distinct().ToList();
             var obchody = new List<Trade>();
@@ -429,19 +409,20 @@ namespace HistoryOptions
 
             foreach (var obchDen in obchodneDni)
             {
-                var expirations = optionData.Where(x => x.QuoteDate >= obchDen).Select(x => x.ExpirationDate).Distinct().OrderBy(x => x.Date).ToList();
-                var data = optionData.Where(x => x.QuoteDate == obchDen && x.ExpirationDate == expirations[1]).ToList();
+                var expirations = optionData.Where(x => x.QuoteDate == obchDen).Select(x => x.ExpirationDate).Distinct().OrderBy(x => x.Date).ToList();
+                var data = optionData.Where(x => x.QuoteDate == obchDen && x.ExpirationDate == expirations[6]).ToList();
                 var optionMatrix = GetOptionMatrix(data);
 
-                var deltaStrike = GetDeltaStrike(data);
+                var deltaStrike = GetDeltaStrike(data.Where(x =>  x.Optiontype.ToUpper() == "PUT").ToList(), 0.25);
                 var atmRow = optionMatrix[deltaStrike];
 
                 if (!obchody.Any() || obchody.Last().CloseDate != null
-                    && RozdielCeny(obchDen, predDen, optionData)
+                 //   && RozdielCeny(obchDen, predDen, optionData)
+                    && vixHodnoty.Single(x => x.date == obchDen.ToString("yyyy-MM-dd")).open < VixMax
                     )
                 {
-                    var hodnota = GetHodnotaStraddleSell(optionMatrix, atmRow.Strike);
-                    var obchod = new Trade()
+                    var hodnota = MarketStrategies.GetHodnotaOptionPutSell(optionMatrix, atmRow.Strike);
+                    var obchod = new Trade
                     {
                         OpenDate = obchDen,
                         Strike = atmRow.Strike,
@@ -457,31 +438,32 @@ namespace HistoryOptions
                 {
                     var obchod = obchody.Last();
                     var obchodOptionMatrix = GetOptionMatrix(optionData.Where(x => x.QuoteDate == obchDen && x.ExpirationDate == obchod.ExpirationDate).ToList());
-                    var hodnota = GetHodnotaStraddleBuy(obchodOptionMatrix, obchod.Strike);
+                    var hodnota = MarketStrategies.GetHodnotaOptionPutBuy(obchodOptionMatrix, obchod.Strike);
 
-                    if (Math.Abs((obchod.OpenPrice * 100) + (hodnota * 100)) > obchod.OpenPrice * 100 * 0.15
-                     //   || IsLastTradingDayOfContract(optionData, obchod.ExpirationDate, obchDen)
-                        )
+                    if (Math.Abs((obchod.OpenPrice * 100) + (hodnota * 100)) > obchod.OpenPrice * 100 * 0.5*(-1))
                     {
                         obchod.CloseDate = obchDen;
                         obchod.ClosePrice = hodnota;
                         obchod.CloseStockPrice = atmRow.StockPrice;
 
-                        //if (obchDen.DayOfWeek != DayOfWeek.Friday)
-                        //{
-                        //    hodnota = GetHodnotaStraddleSell(optionMatrix, atmRow.Strike);
-                        //    var obchodNew = new Trade
-                        //    {
-                        //        OpenDate = obchDen,
-                        //        Strike = atmRow.Strike,
-                        //        OpenPrice = hodnota,
-                        //        Contract = atmRow.ExpirationDate.ToShortDateString(),
-                        //        OpenStockPrice = atmRow.StockPrice,
-                        //        ExpirationDate = atmRow.ExpirationDate
-                        //    };
+                        if (
+                            //RozdielCeny(obchDen, predDen, optionData)
+                            //&& 
+                            vixHodnoty.Single(x => x.date == obchDen.ToString("yyyy-MM-dd")).open < VixMax)
+                        {
+                            hodnota = MarketStrategies.GetHodnotaOptionPutSell(optionMatrix, atmRow.Strike);
+                            var obchodNew = new Trade
+                            {
+                                OpenDate = obchDen,
+                                Strike = atmRow.Strike,
+                                OpenPrice = hodnota,
+                                Contract = atmRow.ExpirationDate.ToShortDateString(),
+                                OpenStockPrice = atmRow.StockPrice,
+                                ExpirationDate = atmRow.ExpirationDate
+                            };
 
-                        //    obchody.Add(obchodNew);
-                        //}
+                            obchody.Add(obchodNew);
+                        }
                     }
                 }
 
@@ -509,7 +491,7 @@ namespace HistoryOptions
 
             var sucDen = optionData.Where(x => x.QuoteDate == obchDen).Select(x => x.StockPrice).Distinct().Single();
 
-            if (Math.Abs((predDen - sucDen)/ sucDen) < 0.005)
+            if (Math.Abs((predDen - sucDen)/ sucDen) > 0.015)
             {
                 return true;
             }
