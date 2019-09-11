@@ -89,8 +89,9 @@ namespace HistoryOptions
             int index = 0;
             int i = 0;
 
-            foreach (var option in optionMatrix)
+            foreach (var option in optionMatrix.Where(x => x.Optiontype.ToUpper() == "CALL"))
             {
+                //Console.WriteLine(Math.Abs(option.Delta));
                 if (Math.Abs(Math.Abs(option.Delta) - hodota) < previousDelta)
                 {
                     index = i;
@@ -497,6 +498,238 @@ namespace HistoryOptions
             }
 
             return false;
+        }
+
+        public string PocitajStrategiuBuyCallAtm(List<Option> optionData)
+        {
+            string result = "";
+            int VixMax = 25;
+
+            var obchodneDni = optionData.Select(x => x.QuoteDate).Distinct().ToList();
+            var obchody = new List<Trade>();
+            DateTime? predDen = null;
+
+            foreach (var obchDen in obchodneDni)
+            {
+                var expirations = optionData.Where(x => x.QuoteDate == obchDen).Select(x => x.ExpirationDate).Distinct().OrderBy(x => x.Date).ToList();
+                var data = optionData.Where(x => x.QuoteDate == obchDen && x.ExpirationDate == expirations[2]).ToList();
+                var optionMatrix = GetOptionMatrix(data);
+
+                var deltaStrike = GetDeltaStrike(data.Where(x => x.Optiontype.ToUpper() == "CALL").ToList());
+                var atmRow = optionMatrix[deltaStrike];
+
+                if (!obchody.Any() || obchody.Last().CloseDate != null)
+                {
+                    var hodnota = MarketStrategies.GetHodnotaOptionCallBuy(optionMatrix, atmRow.Strike);
+                    var obchod = new Trade
+                    {
+                        OpenDate = obchDen,
+                        Strike = atmRow.Strike,
+                        OpenPrice = hodnota,
+                        Contract = atmRow.ExpirationDate.ToShortDateString(),
+                        OpenStockPrice = atmRow.StockPrice,
+                        ExpirationDate = atmRow.ExpirationDate
+                    };
+
+                    obchody.Add(obchod);
+                }
+                else if (obchody.Last().CloseDate == null)
+                {
+                    var obchod = obchody.Last();
+                    var obchodOptionMatrix =
+                        GetOptionMatrix(
+                            optionData.Where(x => x.QuoteDate == obchDen && x.ExpirationDate == obchod.ExpirationDate)
+                                .ToList());
+                    var hodnota = MarketStrategies.GetHodnotaOptionCallSell(obchodOptionMatrix, obchod.Strike);
+
+                    if (Math.Abs((hodnota*100)) < obchod.OpenPrice*100*0.5 ||
+                        Math.Abs((hodnota * 100)) > obchod.OpenPrice * 100 * 1.5)
+                    {
+                        obchod.CloseDate = obchDen;
+                        obchod.ClosePrice = hodnota;
+                        obchod.CloseStockPrice = atmRow.StockPrice;
+
+                        hodnota = MarketStrategies.GetHodnotaOptionCallBuy(optionMatrix, atmRow.Strike);
+                        var obchodNew = new Trade
+                        {
+                            OpenDate = obchDen,
+                            Strike = atmRow.Strike,
+                            OpenPrice = hodnota,
+                            Contract = atmRow.ExpirationDate.ToShortDateString(),
+                            OpenStockPrice = atmRow.StockPrice,
+                            ExpirationDate = atmRow.ExpirationDate
+                        };
+
+                        obchody.Add(obchodNew);
+
+                    }
+                }
+            }
+
+            result = Statistics.ShowTrades(obchody);
+            result += Environment.NewLine;
+            result += Statistics.ShowTotalStatistic(obchody);
+            result += Environment.NewLine;
+            result += Environment.NewLine;
+            result += Statistics.MonthlyResults(obchody);
+
+            return result;
+        }
+
+        public string PocitajStrategiuBuyCallOtm3(List<Option> optionData)
+        {
+            string result = "";
+            int VixMax = 25;
+
+            var obchodneDni = optionData.Select(x => x.QuoteDate).Distinct().ToList();
+            var obchody = new List<Trade>();
+            DateTime? predDen = null;
+
+            foreach (var obchDen in obchodneDni)
+            {
+                var expirations = optionData.Where(x => x.QuoteDate == obchDen).Select(x => x.ExpirationDate).Distinct().OrderBy(x => x.Date).ToList();
+                var data = optionData.Where(x => x.QuoteDate == obchDen && x.ExpirationDate == expirations[2]).ToList();
+                var optionMatrix = GetOptionMatrix(data);
+
+                var deltaStrike = GetDeltaStrike(data.Where(x => x.Optiontype.ToUpper() == "CALL").ToList());
+                var atmRow = optionMatrix[deltaStrike + 2];
+
+                if (!obchody.Any() || obchody.Last().CloseDate != null)
+                {
+                    var hodnota = MarketStrategies.GetHodnotaOptionCallBuy(optionMatrix, atmRow.Strike);
+                    var obchod = new Trade
+                    {
+                        OpenDate = obchDen,
+                        Strike = atmRow.Strike,
+                        OpenPrice = hodnota,
+                        Contract = atmRow.ExpirationDate.ToShortDateString(),
+                        OpenStockPrice = atmRow.StockPrice,
+                        ExpirationDate = atmRow.ExpirationDate
+                    };
+
+                    obchody.Add(obchod);
+                }
+                else if (obchody.Last().CloseDate == null)
+                {
+                    var obchod = obchody.Last();
+                    var obchodOptionMatrix =
+                        GetOptionMatrix(
+                            optionData.Where(x => x.QuoteDate == obchDen && x.ExpirationDate == obchod.ExpirationDate)
+                                .ToList());
+                    var hodnota = MarketStrategies.GetHodnotaOptionCallSell(obchodOptionMatrix, obchod.Strike);
+
+                    if (Math.Abs((hodnota * 100)) < obchod.OpenPrice * 100 * 0.3 ||
+                        Math.Abs((hodnota * 100)) > obchod.OpenPrice * 100 * 1.5)
+                    {
+                        obchod.CloseDate = obchDen;
+                        obchod.ClosePrice = hodnota;
+                        obchod.CloseStockPrice = atmRow.StockPrice;
+
+                        hodnota = MarketStrategies.GetHodnotaOptionCallBuy(optionMatrix, atmRow.Strike);
+                        var obchodNew = new Trade
+                        {
+                            OpenDate = obchDen,
+                            Strike = atmRow.Strike,
+                            OpenPrice = hodnota,
+                            Contract = atmRow.ExpirationDate.ToShortDateString(),
+                            OpenStockPrice = atmRow.StockPrice,
+                            ExpirationDate = atmRow.ExpirationDate
+                        };
+
+                        obchody.Add(obchodNew);
+
+                    }
+                }
+            }
+
+            result = Statistics.ShowTrades(obchody);
+            result += Environment.NewLine;
+            result += Statistics.ShowTotalStatistic(obchody);
+            result += Environment.NewLine;
+            result += Environment.NewLine;
+            result += Statistics.MonthlyResults(obchody);
+
+            return result;
+        }
+
+        public string PocitajStrategiuBuyCallAtm3(List<Option> optionData)
+        {
+            string result = "";
+            int VixMax = 25;
+
+            var obchodneDni = optionData.Select(x => x.QuoteDate).Distinct().ToList();
+            var obchody = new List<Trade>();
+            DateTime? predDen = null;
+
+            foreach (var obchDen in obchodneDni)
+            {
+                var expirations = optionData.Where(x => x.QuoteDate == obchDen).Select(x => x.ExpirationDate).Distinct().OrderBy(x => x.Date).ToList();
+                var data = optionData.Where(x => x.QuoteDate == obchDen && x.ExpirationDate == expirations[2]).ToList();
+                var optionMatrix = GetOptionMatrix(data);
+
+                var deltaStrike = GetDeltaStrike(data.Where(x => x.Optiontype.ToUpper() == "CALL").ToList());
+                var atmRow = optionMatrix[deltaStrike - 2];
+
+                if (!obchody.Any() || obchody.Last().CloseDate != null)
+                {
+                    var hodnota = MarketStrategies.GetHodnotaOptionCallBuy(optionMatrix, atmRow.Strike);
+                    var obchod = new Trade
+                    {
+                        OpenDate = obchDen,
+                        Strike = atmRow.Strike,
+                        OpenPrice = hodnota,
+                        Contract = atmRow.ExpirationDate.ToShortDateString(),
+                        OpenStockPrice = atmRow.StockPrice,
+                        ExpirationDate = atmRow.ExpirationDate
+                    };
+
+                    obchody.Add(obchod);
+                }
+                else if (obchody.Last().CloseDate == null || obchDen.AddDays(3) >= obchody.Last().ExpirationDate)
+                {
+                    var obchod = obchody.Last();
+                    var obchodOptionMatrix =
+                        GetOptionMatrix(
+                            optionData.Where(x => x.QuoteDate == obchDen && x.ExpirationDate == obchod.ExpirationDate)
+                                .ToList());
+                    var hodnota = MarketStrategies.GetHodnotaOptionCallSell(obchodOptionMatrix, obchod.Strike);
+
+                    if (Math.Abs((hodnota * 100)) < obchod.OpenPrice * 100 * 0.3 ||
+                        Math.Abs((hodnota * 100)) > obchod.OpenPrice * 100 * 1.5 || 
+                        obchDen.AddDays(3) >= obchody.Last().ExpirationDate
+                        )
+                    {
+                        obchod.CloseDate = obchDen;
+                        obchod.ClosePrice = hodnota;
+                        obchod.CloseStockPrice = atmRow.StockPrice;
+
+                        hodnota = MarketStrategies.GetHodnotaOptionCallBuy(optionMatrix, atmRow.Strike);
+                        var obchodNew = new Trade
+                        {
+                            OpenDate = obchDen,
+                            Strike = atmRow.Strike,
+                            OpenPrice = hodnota,
+                            Contract = atmRow.ExpirationDate.ToShortDateString(),
+                            OpenStockPrice = atmRow.StockPrice,
+                            ExpirationDate = atmRow.ExpirationDate
+                        };
+
+                        obchody.Add(obchodNew);
+
+                    }
+                }
+
+                Console.WriteLine(obchDen.AddDays(4) >= obchody.Last().ExpirationDate);
+            }
+
+            result = Statistics.ShowTrades(obchody);
+            result += Environment.NewLine;
+            result += Statistics.ShowTotalStatistic(obchody);
+            result += Environment.NewLine;
+            result += Environment.NewLine;
+            result += Statistics.MonthlyResults(obchody);
+
+            return result;
         }
     }
 }

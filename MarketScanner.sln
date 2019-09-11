@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analyzer", "Analyzer\Analyz
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HistoryOptions", "HistoryOptions\HistoryOptions.csproj", "{275B0507-90CC-4D12-A325-1EC076EB3041}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortfolioSimulator", "PortfolioSimulator\PortfolioSimulator.csproj", "{EC5AD113-E5A0-4E22-9B35-CFAF0B48184E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{275B0507-90CC-4D12-A325-1EC076EB3041}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{275B0507-90CC-4D12-A325-1EC076EB3041}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{275B0507-90CC-4D12-A325-1EC076EB3041}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC5AD113-E5A0-4E22-9B35-CFAF0B48184E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC5AD113-E5A0-4E22-9B35-CFAF0B48184E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC5AD113-E5A0-4E22-9B35-CFAF0B48184E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC5AD113-E5A0-4E22-9B35-CFAF0B48184E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -24,6 +24,24 @@ namespace HistoryOptions
             return result * (-1);
         }
 
+        public static double GetHodnotaOptionCallBuy(List<OptionMatrixRow> optionData, double strike)
+        {
+            double result = 0;
+            // ask
+            result = ((optionData.Single(x => x.Strike == strike).Call.Ask + optionData.Single(x => x.Strike == strike).Call.Bid) / 2);
+
+            return result;
+        }
+
+        public static double GetHodnotaOptionCallSell(List<OptionMatrixRow> optionData, double strike)
+        {
+            double result = 0;
+            // ask
+            result = ((optionData.Single(x => x.Strike == strike).Call.Ask + optionData.Single(x => x.Strike == strike).Call.Bid) / 2);
+
+            return result * (-1);
+        }
+
         public static double GetHodnotaStraddleBuy(List<OptionMatrixRow> optionData, double strike)
         {
             double result = 0;

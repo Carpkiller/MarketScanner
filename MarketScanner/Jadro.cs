@@ -67,7 +67,7 @@ namespace MarketScanner
 
         private void NacitajDividendoveSpolocnosti(string symbolsToLoad)
         {
-            var command = string.Format("stock/market/batch?symbols={0}&types=quote,stats,dividends&range=3m&filter=symbol,changePercent,dividendRate,dividendYield,amount,exDate", symbolsToLoad);
+            var command = string.Format("stock/market/batch?symbols={0}&types=quote,stats,dividends&range=3m&filter=symbol,open,avgTotalVolume,changePercent,dividendRate,dividendYield,amount,exDate", symbolsToLoad);
 
             var result = CallApi(command);
 
@@ -85,7 +85,7 @@ namespace MarketScanner
                     //    Console.WriteLine("{0} : {1} , div. vynos - {2} , dividenda - {3}", stock.Quote.symbol, stock.Quote.changePercent * 100, stock.Stats.dividendYield, stock.Dividends.Count > 0 ? stock.Dividends.First().amount : 0.0);
                     //}
 
-                    if (stock.Dividends.Any() && stock.Dividends.Last().exDate != null)
+                    if (stock.Dividends.Any() && stock.Dividends.Last().exDate != null && stock.Quote.open < 40 && stock.Stats.dividendYield > 6 && stock.Quote.avgTotalVolume > 5000000 )
                     {
                         var predExDate = DateTime.ParseExact(stock.Dividends.Last().exDate, "yyyy-MM-dd",
                             CultureInfo.InvariantCulture);
@@ -94,7 +94,7 @@ namespace MarketScanner
                         var nasledExDate2 = predExDate.AddMonths(6);
                         var nasledExDate3 = predExDate.AddMonths(9);
 
-                        Console.WriteLine("{0} : {1}  ->  {2}  ->  {3}", stock.Quote.symbol, nasledExDate1.ToLongDateString(), nasledExDate2.ToLongDateString(), nasledExDate3.ToLongDateString());
+                        Console.WriteLine("{0} : {1}  ->  {2} - {3}", stock.Quote.symbol, stock.Quote.open, stock.Dividends.Last().amount, stock.Stats.dividendYield);
                     }
                 }
             }

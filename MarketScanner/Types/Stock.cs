@@ -15,7 +15,7 @@ namespace MarketScanner.Types
         public string primaryExchange { get; set; }
         public string sector { get; set; }
         public string calculationPrice { get; set; }
-        public int open { get; set; }
+        public decimal? open { get; set; }
         public long openTime { get; set; }
         public double close { get; set; }
         public long closeTime { get; set; }

@@ -22,7 +22,7 @@ namespace MarketScanner
             jadro.LoadSymbols();
           //  jadro.NacitajVsetky();
             jadro.NacitajVsetkyDividendoveSpolocnosti();
-
+            Console.Write("---Koniec---");
             Console.ReadLine();
 
             var symbol = "msft,t";

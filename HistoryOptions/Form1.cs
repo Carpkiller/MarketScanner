@@ -228,5 +228,20 @@ namespace HistoryOptions
         {
             textBox2.Text = jadro.PocitajStrategiu5(LoadOptionData());
         }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            textBox2.Text = jadro.PocitajStrategiuBuyCallAtm(LoadOptionData());
+        }
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+            textBox2.Text = jadro.PocitajStrategiuBuyCallOtm3(LoadOptionData());
+        }
+
+        private void button9_Click(object sender, EventArgs e)
+        {
+            textBox2.Text = jadro.PocitajStrategiuBuyCallAtm3(LoadOptionData());
+        }
     }
 }
