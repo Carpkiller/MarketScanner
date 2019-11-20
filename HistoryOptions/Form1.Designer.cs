@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.label2 = new System.Windows.Forms.Label();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
@@ -46,7 +47,24 @@
             this.button7 = new System.Windows.Forms.Button();
             this.button8 = new System.Windows.Forms.Button();
             this.button9 = new System.Windows.Forms.Button();
+            this.ltvTester = new System.Windows.Forms.ListView();
+            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.kupitCALLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.predatCALLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.predatPUTToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.kupitPUTToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.kupitAkcieToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.predatAkcieToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.dateTimePicker2 = new System.Windows.Forms.DateTimePicker();
+            this.button10 = new System.Windows.Forms.Button();
+            this.button11 = new System.Windows.Forms.Button();
+            this.contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.exerciseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.assigmentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.lblProfit = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
+            this.contextMenuStrip1.SuspendLayout();
+            this.contextMenuStrip2.SuspendLayout();
             this.SuspendLayout();
             // 
             // label2
@@ -95,12 +113,14 @@
             | System.Windows.Forms.AnchorStyles.Left)));
             this.listView1.FullRowSelect = true;
             this.listView1.GridLines = true;
+            this.listView1.HideSelection = false;
             this.listView1.Location = new System.Drawing.Point(12, 60);
             this.listView1.Name = "listView1";
             this.listView1.Size = new System.Drawing.Size(744, 565);
             this.listView1.TabIndex = 1;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
+            this.listView1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.listView1_MouseClick);
             // 
             // button1
             // 
@@ -116,16 +136,16 @@
             // 
             this.dateTimePicker1.CustomFormat = "dd MMMM, yyyy - dddd";
             this.dateTimePicker1.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.dateTimePicker1.Location = new System.Drawing.Point(273, 13);
+            this.dateTimePicker1.Location = new System.Drawing.Point(261, 13);
             this.dateTimePicker1.Name = "dateTimePicker1";
-            this.dateTimePicker1.Size = new System.Drawing.Size(196, 20);
+            this.dateTimePicker1.Size = new System.Drawing.Size(214, 20);
             this.dateTimePicker1.TabIndex = 8;
             this.dateTimePicker1.ValueChanged += new System.EventHandler(this.dateTimePicker1_ValueChanged);
             // 
             // lblPrice
             // 
             this.lblPrice.AutoSize = true;
-            this.lblPrice.Location = new System.Drawing.Point(487, 15);
+            this.lblPrice.Location = new System.Drawing.Point(475, 15);
             this.lblPrice.Name = "lblPrice";
             this.lblPrice.Size = new System.Drawing.Size(0, 13);
             this.lblPrice.TabIndex = 9;
@@ -230,11 +250,149 @@
             this.button9.UseVisualStyleBackColor = true;
             this.button9.Click += new System.EventHandler(this.button9_Click);
             // 
+            // ltvTester
+            // 
+            this.ltvTester.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ltvTester.FullRowSelect = true;
+            this.ltvTester.GridLines = true;
+            this.ltvTester.HideSelection = false;
+            this.ltvTester.Location = new System.Drawing.Point(8, 669);
+            this.ltvTester.Name = "ltvTester";
+            this.ltvTester.Size = new System.Drawing.Size(1343, 239);
+            this.ltvTester.TabIndex = 1;
+            this.ltvTester.UseCompatibleStateImageBehavior = false;
+            this.ltvTester.View = System.Windows.Forms.View.Details;
+            this.ltvTester.MouseClick += new System.Windows.Forms.MouseEventHandler(this.ltvTester_MouseClick);
+            // 
+            // contextMenuStrip1
+            // 
+            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.kupitCALLToolStripMenuItem,
+            this.predatCALLToolStripMenuItem,
+            this.predatPUTToolStripMenuItem,
+            this.kupitPUTToolStripMenuItem,
+            this.kupitAkcieToolStripMenuItem,
+            this.predatAkcieToolStripMenuItem});
+            this.contextMenuStrip1.Name = "contextMenuStrip1";
+            this.contextMenuStrip1.Size = new System.Drawing.Size(140, 136);
+            // 
+            // kupitCALLToolStripMenuItem
+            // 
+            this.kupitCALLToolStripMenuItem.Name = "kupitCALLToolStripMenuItem";
+            this.kupitCALLToolStripMenuItem.Size = new System.Drawing.Size(139, 22);
+            this.kupitCALLToolStripMenuItem.Text = "Kupit CALL";
+            this.kupitCALLToolStripMenuItem.Click += new System.EventHandler(this.kupitCALLToolStripMenuItem_Click);
+            // 
+            // predatCALLToolStripMenuItem
+            // 
+            this.predatCALLToolStripMenuItem.Name = "predatCALLToolStripMenuItem";
+            this.predatCALLToolStripMenuItem.Size = new System.Drawing.Size(139, 22);
+            this.predatCALLToolStripMenuItem.Text = "Predat CALL";
+            this.predatCALLToolStripMenuItem.Click += new System.EventHandler(this.predatCALLToolStripMenuItem_Click);
+            // 
+            // predatPUTToolStripMenuItem
+            // 
+            this.predatPUTToolStripMenuItem.Name = "predatPUTToolStripMenuItem";
+            this.predatPUTToolStripMenuItem.Size = new System.Drawing.Size(139, 22);
+            this.predatPUTToolStripMenuItem.Text = "Predat PUT";
+            this.predatPUTToolStripMenuItem.Click += new System.EventHandler(this.predatPUTToolStripMenuItem_Click);
+            // 
+            // kupitPUTToolStripMenuItem
+            // 
+            this.kupitPUTToolStripMenuItem.Name = "kupitPUTToolStripMenuItem";
+            this.kupitPUTToolStripMenuItem.Size = new System.Drawing.Size(139, 22);
+            this.kupitPUTToolStripMenuItem.Text = "Kupit PUT";
+            this.kupitPUTToolStripMenuItem.Click += new System.EventHandler(this.kupitPUTToolStripMenuItem_Click);
+            // 
+            // kupitAkcieToolStripMenuItem
+            // 
+            this.kupitAkcieToolStripMenuItem.Name = "kupitAkcieToolStripMenuItem";
+            this.kupitAkcieToolStripMenuItem.Size = new System.Drawing.Size(139, 22);
+            this.kupitAkcieToolStripMenuItem.Text = "Kupit akcie";
+            this.kupitAkcieToolStripMenuItem.Click += new System.EventHandler(this.kupitAkcieToolStripMenuItem_Click);
+            // 
+            // predatAkcieToolStripMenuItem
+            // 
+            this.predatAkcieToolStripMenuItem.Name = "predatAkcieToolStripMenuItem";
+            this.predatAkcieToolStripMenuItem.Size = new System.Drawing.Size(139, 22);
+            this.predatAkcieToolStripMenuItem.Text = "Predat akcie";
+            this.predatAkcieToolStripMenuItem.Click += new System.EventHandler(this.predatAkcieToolStripMenuItem_Click);
+            // 
+            // dateTimePicker2
+            // 
+            this.dateTimePicker2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.dateTimePicker2.CustomFormat = "dd MMMM, yyyy - dddd";
+            this.dateTimePicker2.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
+            this.dateTimePicker2.Location = new System.Drawing.Point(8, 643);
+            this.dateTimePicker2.Name = "dateTimePicker2";
+            this.dateTimePicker2.Size = new System.Drawing.Size(211, 20);
+            this.dateTimePicker2.TabIndex = 22;
+            this.dateTimePicker2.ValueChanged += new System.EventHandler(this.dateTimePicker2_ValueChanged);
+            // 
+            // button10
+            // 
+            this.button10.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button10.Location = new System.Drawing.Point(225, 643);
+            this.button10.Name = "button10";
+            this.button10.Size = new System.Drawing.Size(75, 20);
+            this.button10.TabIndex = 23;
+            this.button10.Text = " <--";
+            this.button10.UseVisualStyleBackColor = true;
+            this.button10.Click += new System.EventHandler(this.button10_Click);
+            // 
+            // button11
+            // 
+            this.button11.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button11.Location = new System.Drawing.Point(306, 643);
+            this.button11.Name = "button11";
+            this.button11.Size = new System.Drawing.Size(75, 20);
+            this.button11.TabIndex = 24;
+            this.button11.Text = " -->";
+            this.button11.UseVisualStyleBackColor = true;
+            this.button11.Click += new System.EventHandler(this.button11_Click);
+            // 
+            // contextMenuStrip2
+            // 
+            this.contextMenuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.exerciseToolStripMenuItem,
+            this.assigmentToolStripMenuItem});
+            this.contextMenuStrip2.Name = "contextMenuStrip2";
+            this.contextMenuStrip2.Size = new System.Drawing.Size(131, 48);
+            // 
+            // exerciseToolStripMenuItem
+            // 
+            this.exerciseToolStripMenuItem.Name = "exerciseToolStripMenuItem";
+            this.exerciseToolStripMenuItem.Size = new System.Drawing.Size(130, 22);
+            this.exerciseToolStripMenuItem.Text = "Exercise";
+            this.exerciseToolStripMenuItem.Click += new System.EventHandler(this.exerciseToolStripMenuItem_Click);
+            // 
+            // assigmentToolStripMenuItem
+            // 
+            this.assigmentToolStripMenuItem.Name = "assigmentToolStripMenuItem";
+            this.assigmentToolStripMenuItem.Size = new System.Drawing.Size(130, 22);
+            this.assigmentToolStripMenuItem.Text = "Assigment";
+            this.assigmentToolStripMenuItem.Click += new System.EventHandler(this.assigmentToolStripMenuItem_Click);
+            // 
+            // lblProfit
+            // 
+            this.lblProfit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lblProfit.AutoSize = true;
+            this.lblProfit.Location = new System.Drawing.Point(416, 647);
+            this.lblProfit.Name = "lblProfit";
+            this.lblProfit.Size = new System.Drawing.Size(0, 13);
+            this.lblProfit.TabIndex = 26;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1363, 637);
+            this.ClientSize = new System.Drawing.Size(1363, 920);
+            this.Controls.Add(this.lblProfit);
+            this.Controls.Add(this.button11);
+            this.Controls.Add(this.button10);
+            this.Controls.Add(this.dateTimePicker2);
+            this.Controls.Add(this.ltvTester);
             this.Controls.Add(this.button9);
             this.Controls.Add(this.button8);
             this.Controls.Add(this.button7);
@@ -254,6 +412,8 @@
             this.Name = "Form1";
             this.Text = "Form1";
             this.tabControl1.ResumeLayout(false);
+            this.contextMenuStrip1.ResumeLayout(false);
+            this.contextMenuStrip2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -279,6 +439,21 @@
         private System.Windows.Forms.Button button7;
         private System.Windows.Forms.Button button8;
         private System.Windows.Forms.Button button9;
+        private System.Windows.Forms.ListView ltvTester;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem kupitCALLToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem predatCALLToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem predatPUTToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem kupitPUTToolStripMenuItem;
+        private System.Windows.Forms.DateTimePicker dateTimePicker2;
+        private System.Windows.Forms.Button button10;
+        private System.Windows.Forms.Button button11;
+        private System.Windows.Forms.ToolStripMenuItem kupitAkcieToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem predatAkcieToolStripMenuItem;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip2;
+        private System.Windows.Forms.ToolStripMenuItem exerciseToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem assigmentToolStripMenuItem;
+        private System.Windows.Forms.Label lblProfit;
     }
 }
 

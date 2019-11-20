@@ -51,6 +51,7 @@
     <Compile Include="Jadro.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Types\BackTest.cs" />
     <Compile Include="Types\Dividends.cs" />
     <Compile Include="Types\HistoryStockPrice.cs" />
     <Compile Include="Types\Option.cs" />

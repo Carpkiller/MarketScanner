@@ -43,7 +43,8 @@ namespace HistoryOptions
             lblPrice.Text = optionData.Where(x => x.QuoteDate == maxDate).Max(x => x.StockPrice).ToString();
             tabControl1.TabPages.Clear();
 
-            var expirationDates = optionData.Where(x => x.QuoteDate == maxDate).Select(x => x.ExpirationDate).Distinct().OrderBy(x => x.Date).ToList();
+            var expirationDates = optionData.Where(x => x.QuoteDate == maxDate).Select(x => x.ExpirationDate).Distinct()
+                .OrderBy(x => x.Date).ToList();
             foreach (var expirationDate in expirationDates)
             {
                 TabPage tp = new TabPage(expirationDate.ToShortDateString());
@@ -51,7 +52,9 @@ namespace HistoryOptions
             }
 
             var curEpirationDate = tabControl1.SelectedTab.Text;
-            FillTabPage(optionData.Where(x => x.QuoteDate == maxDate && x.ExpirationDate.ToShortDateString() == curEpirationDate).OrderBy(x => x.Strike).ToList());
+            FillTabPage(optionData
+                .Where(x => x.QuoteDate == maxDate && x.ExpirationDate.ToShortDateString() == curEpirationDate)
+                .OrderBy(x => x.Strike).ToList());
             loading = false;
         }
 
@@ -70,34 +73,52 @@ namespace HistoryOptions
             listView1.Clear();
             FillListViewHeader();
             var ee = new List<ListViewItem>();
-            foreach (var option in optionData.Where(x => x.QuoteDate == optionData[1].QuoteDate && x.Optiontype.ToUpper() == "CALL"))
+            foreach (var option in optionData.Where(x =>
+                x.QuoteDate == optionData[1].QuoteDate && x.Optiontype.ToUpper() == "CALL"))
             {
                 string[] row =
-                    {
-                        option.OpenInterest,
-                        option.Volume,
-                        option.Delta.ToString(),
-                        option.Bid.ToString(),
-                        option.Ask.ToString(),
-                        option.Strike.ToString(),
-                        optionData.Single(x => x.QuoteDate == option.QuoteDate && x.Strike == option.Strike && x.Optiontype.ToUpper() == "PUT").Bid.ToString(),
-                        optionData.Single(x => x.QuoteDate == option.QuoteDate && x.Strike == option.Strike && x.Optiontype.ToUpper() == "PUT").Ask.ToString(),
-                        optionData.Single(x => x.QuoteDate == option.QuoteDate && x.Strike == option.Strike && x.Optiontype.ToUpper() == "PUT").Delta.ToString(),
-                        optionData.Single(x => x.QuoteDate == option.QuoteDate && x.Strike == option.Strike && x.Optiontype.ToUpper() == "PUT").Volume,
-                        optionData.Single(x => x.QuoteDate == option.QuoteDate && x.Strike == option.Strike && x.Optiontype.ToUpper() == "PUT").OpenInterest
-                    };
-                
+                {
+                    option.OpenInterest,
+                    option.Volume,
+                    option.Delta.ToString(),
+                    option.Bid.ToString(),
+                    option.Ask.ToString(),
+                    option.Strike.ToString(),
+                    optionData.Single(x =>
+                            x.QuoteDate == option.QuoteDate && x.Strike == option.Strike &&
+                            x.Optiontype.ToUpper() == "PUT")
+                        .Bid.ToString(),
+                    optionData.Single(x =>
+                            x.QuoteDate == option.QuoteDate && x.Strike == option.Strike &&
+                            x.Optiontype.ToUpper() == "PUT")
+                        .Ask.ToString(),
+                    optionData.Single(x =>
+                            x.QuoteDate == option.QuoteDate && x.Strike == option.Strike &&
+                            x.Optiontype.ToUpper() == "PUT")
+                        .Delta.ToString(),
+                    optionData.Single(x =>
+                            x.QuoteDate == option.QuoteDate && x.Strike == option.Strike &&
+                            x.Optiontype.ToUpper() == "PUT")
+                        .Volume,
+                    optionData.Single(x =>
+                            x.QuoteDate == option.QuoteDate && x.Strike == option.Strike &&
+                            x.Optiontype.ToUpper() == "PUT")
+                        .OpenInterest
+                };
+
                 var listViewItem = new ListViewItem(row);
                 ee.Add(listViewItem);
 
                 if (Math.Abs(option.Delta - 0.5) < previousDelta)
                 {
-                    index = i; previousDelta = Math.Abs(option.Delta - 0.5);
+                    index = i;
+                    previousDelta = Math.Abs(option.Delta - 0.5);
                 }
-                
+
                 i++;
             }
-            listView1.Sort(); 
+
+            listView1.Sort();
             listView1.Items.AddRange(ee.ToArray());
             listView1.Items[index].BackColor = Color.LightBlue;
             listView1.Refresh();
@@ -127,6 +148,8 @@ namespace HistoryOptions
                 FillListView((sender as DateTimePicker).Value);
                 loading = false;
             }
+
+            dateTimePicker2.Value = dateTimePicker1.Value;
         }
 
         private void FillListView(DateTime date, bool reLoadTabs = true)
@@ -136,7 +159,7 @@ namespace HistoryOptions
             if (optionData.Any(x => x.QuoteDate == date))
             {
                 lblPrice.Text = optionData.Where(x => x.QuoteDate == date).Max(x => x.StockPrice).ToString();
-                
+
                 if (reLoadTabs)
                 {
                     tabControl1.TabPages.Clear();
@@ -156,7 +179,7 @@ namespace HistoryOptions
                 var curEpirationDate = tabControl1.SelectedTab.Text;
                 FillTabPage(
                     optionData.Where(
-                        x => x.QuoteDate == date && x.ExpirationDate.ToShortDateString() == curEpirationDate)
+                            x => x.QuoteDate == date && x.ExpirationDate.ToShortDateString() == curEpirationDate)
                         .OrderBy(x => x.Strike)
                         .ToList());
             }
@@ -212,7 +235,8 @@ namespace HistoryOptions
 
         private void button3_Click(object sender, EventArgs e)
         {
-            textBox2.Text = jadro.PocitajStrategiu2(LoadOptionData());}
+            textBox2.Text = jadro.PocitajStrategiu2(LoadOptionData());
+        }
 
         private void button4_Click(object sender, EventArgs e)
         {
@@ -242,6 +266,189 @@ namespace HistoryOptions
         private void button9_Click(object sender, EventArgs e)
         {
             textBox2.Text = jadro.PocitajStrategiuBuyCallAtm3(LoadOptionData());
+        }
+
+        private void listView1_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                contextMenuStrip1.Show(this, e.X, e.Y);
+            }
+        }
+
+        private void dateTimePicker2_ValueChanged(object sender, EventArgs e)
+        {
+            dateTimePicker1.Value = dateTimePicker2.Value.Date;
+
+            NacitajObchody();
+        }
+
+        private void NacitajObchody()
+        {
+            if (jadro.GetObchody() == null)
+            {
+                return;
+            }
+
+            double profit = 0;
+
+            ltvTester.Clear();
+            FillTesterListViewHeader();
+            var ee = new List<ListViewItem>();
+            foreach (var obchod in jadro.GetObchody())
+            {
+                string[] row =
+                {
+                    obchod.StartDate.ToShortDateString(),
+                    obchod.Optiontype,
+                    obchod.ExpirationDate?.ToShortDateString(),
+                    obchod.Strike.ToString(),
+                    obchod.Price.ToString(),
+                    obchod.Ukonceny ? obchod.Profit.ToString() : jadro.GetZiskStrata(LoadOptionData(), obchod, 
+                        dateTimePicker1.Value, lblPrice.Text).ToString(),
+                    JeItm(obchod),
+                    obchod.Ukonceny.ToString()
+                 };
+
+
+                var listViewItem = new ListViewItem(row);
+                ee.Add(listViewItem);
+                profit += obchod.Profit;
+            }
+
+            //ltvTester.Sort();
+            ltvTester.Items.AddRange(ee.ToArray());
+            //ltvTester.Items[index].BackColor = Color.LightBlue;
+            ltvTester.Refresh();
+
+            lblProfit.Text = profit.ToString();
+        }
+
+        private string JeItm(BackTest obchod)
+        {
+            if (obchod.Ukonceny || obchod.Optiontype == "AKCIE")
+            {
+                return "";
+            }
+
+            if ((obchod.Optiontype == "CALL" && obchod.Strike < double.Parse(lblPrice.Text)) ||
+                (obchod.Optiontype == "PUT" && obchod.Strike > double.Parse(lblPrice.Text)))
+            {
+                return true.ToString();
+            }
+
+            return false.ToString();
+        }
+
+        private void button10_Click(object sender, EventArgs e)
+        {
+            dateTimePicker2.Value = dateTimePicker2.Value.AddDays(-1);
+        }
+
+        private void button11_Click(object sender, EventArgs e)
+        {
+            dateTimePicker2.Value = dateTimePicker2.Value.AddDays(1);
+        }
+
+        private void FillTesterListViewHeader()
+        {
+            ltvTester.Columns.Clear();
+            ltvTester.Columns.Add("Otvorenie pozicie");
+            ltvTester.Columns.Add("Opcia");
+            ltvTester.Columns.Add("Expiracny datum");
+            ltvTester.Columns.Add("Strike");
+            ltvTester.Columns.Add("Cena");
+            ltvTester.Columns.Add("P/L");
+            ltvTester.Columns.Add("ITM");
+            ltvTester.Columns.Add("Ukonceny");
+        }
+
+        private void kupitCALLToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            jadro.PridajObchod("CALL", "BUY", dateTimePicker1.Value, tabControl1.SelectedTab.Text,
+                listView1.SelectedItems[0].SubItems);
+            NacitajObchody();
+        }
+
+        private void predatCALLToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            jadro.PridajObchod("CALL", "SELL", dateTimePicker1.Value, tabControl1.SelectedTab.Text,
+                listView1.SelectedItems[0].SubItems);
+            NacitajObchody();
+        }
+
+        private void predatPUTToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            jadro.PridajObchod("PUT", "SELL", dateTimePicker1.Value, tabControl1.SelectedTab.Text,
+                listView1.SelectedItems[0].SubItems);
+            NacitajObchody();
+        }
+
+        private void kupitPUTToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            jadro.PridajObchod("PUT", "BUY", dateTimePicker1.Value, tabControl1.SelectedTab.Text,
+                listView1.SelectedItems[0].SubItems);
+            NacitajObchody();
+        }
+
+        private void kupitAkcieToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            jadro.PridajObchod("AKCIE", "BUY", dateTimePicker1.Value, lblPrice.Text);
+            NacitajObchody();
+        }
+
+        private void predatAkcieToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            jadro.PridajObchod("AKCIE", "SELL", dateTimePicker1.Value, lblPrice.Text);
+            NacitajObchody();
+        }
+
+        private void ltvTester_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                contextMenuStrip2.Show(ltvTester, e.X, e.Y);
+            }
+        }
+
+        private void exerciseToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (ltvTester.SelectedItems[0].SubItems[1].Text == "CALL")
+            {
+                jadro.PridajObchod("AKCIE", "BUY", dateTimePicker1.Value, ltvTester.SelectedItems[0].SubItems[3].Text);
+                jadro.UkonciOpcnyObchod(ltvTester.SelectedItems[0].SubItems[1].Text, ltvTester.SelectedItems[0].SubItems[3].Text, 
+                    ltvTester.SelectedItems[0].SubItems[4].Text);
+                NacitajObchody();
+                return;
+            }
+
+            if (ltvTester.SelectedItems[0].SubItems[1].Text == "PUT")
+            {
+                jadro.PridajObchod("AKCIE", "SELL", dateTimePicker1.Value, ltvTester.SelectedItems[0].SubItems[3].Text);
+                jadro.UkonciOpcnyObchod(ltvTester.SelectedItems[0].SubItems[1].Text, ltvTester.SelectedItems[0].SubItems[3].Text,
+                    ltvTester.SelectedItems[0].SubItems[4].Text);
+                NacitajObchody();
+            }
+        }
+
+        private void assigmentToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (ltvTester.SelectedItems[0].SubItems[1].Text == "CALL")
+            {
+                jadro.PridajObchod("AKCIE", "SELL", dateTimePicker1.Value, ltvTester.SelectedItems[0].SubItems[3].Text);
+                jadro.UkonciOpcnyObchod(ltvTester.SelectedItems[0].SubItems[1].Text, ltvTester.SelectedItems[0].SubItems[3].Text,
+                    ltvTester.SelectedItems[0].SubItems[4].Text);
+                NacitajObchody();
+                return;
+            }
+
+            if (ltvTester.SelectedItems[0].SubItems[1].Text == "PUT")
+            {
+                jadro.PridajObchod("AKCIE", "BUY", dateTimePicker1.Value, ltvTester.SelectedItems[0].SubItems[3].Text);
+                jadro.UkonciOpcnyObchod(ltvTester.SelectedItems[0].SubItems[1].Text, ltvTester.SelectedItems[0].SubItems[3].Text,
+                    ltvTester.SelectedItems[0].SubItems[4].Text);
+                NacitajObchody();
+            }
         }
     }
 }

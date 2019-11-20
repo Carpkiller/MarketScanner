@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
+using System.Windows.Forms;
 using MarketScanner.Types;
 
 namespace HistoryOptions
 {
     public class Core
     {
+        private List<BackTest> ListObchodov;
+
         public Core()
         {
         }
@@ -102,6 +106,19 @@ namespace HistoryOptions
             }
 
             return index;
+        }
+
+        public double GetCena(List<Option> optionMatrix, DateTime datum, string typ, DateTime? expDatum, double? strike, string cenaAkcie)
+        {
+            if (typ == "AKCIE")
+            {
+                return double.Parse(cenaAkcie);
+            }
+
+            return (optionMatrix.Where(x => x.Optiontype.ToUpper() == typ).Where(y => y.ExpirationDate == expDatum).
+                Where(c => c.Strike == strike).Where(d => d.QuoteDate <= datum).OrderByDescending(w => w.QuoteDate).First().Bid +
+                    optionMatrix.Where(x => x.Optiontype.ToUpper() == typ).Where(y => y.ExpirationDate == expDatum).
+                        Where(c => c.Strike == strike).Where(d => d.QuoteDate <= datum).OrderByDescending(w => w.QuoteDate).First().Ask) / 2;
         }
 
         private List<OptionMatrixRow> GetOptionMatrix(List<Option> data)
@@ -273,6 +290,131 @@ namespace HistoryOptions
             result += Statistics.MonthlyResults(obchody);
 
             return result;
+        }
+
+        internal IEnumerable<BackTest> GetObchody()
+        {
+            return ListObchodov;
+        }
+
+        internal void PridajObchod(string typ, string strana, DateTime startDate, string expiracia,
+            ListViewItem.ListViewSubItemCollection subItems)
+        {
+            if (ListObchodov == null)
+            {
+                ListObchodov = new List<BackTest>();
+            }
+
+            var obchod = new BackTest()
+            {
+                Strike = double.Parse(subItems[5].Text, NumberStyles.Number, CultureInfo.GetCultureInfo("en-us")),
+                Delta = double.Parse(subItems[2].Text, NumberStyles.Number, CultureInfo.GetCultureInfo("en-us")),
+                Price = typ == "CALL"
+                    ? (double.Parse(subItems[3].Text, NumberStyles.Number, CultureInfo.GetCultureInfo("en-us")) +
+                       double.Parse(subItems[4].Text, NumberStyles.Number, CultureInfo.GetCultureInfo("en-us"))) / 2
+                    : (double.Parse(subItems[6].Text, NumberStyles.Number, CultureInfo.GetCultureInfo("en-us")) +
+                       double.Parse(subItems[7].Text, NumberStyles.Number, CultureInfo.GetCultureInfo("en-us"))) / 2,
+                StartDate = startDate,
+                ExpirationDate = DateTime.Parse(expiracia),
+                Optiontype = typ,
+                Ukonceny = false
+            };
+
+            if (strana == "BUY")
+            {
+                obchod.Price *= -1;
+            }
+
+            ListObchodov.Add(obchod);
+        }
+
+        internal void PridajObchod(string typ, string strana, DateTime startDate, string cena)
+        {
+            if (ListObchodov == null)
+            {
+                ListObchodov = new List<BackTest>();
+            }
+
+            if (strana == "SELL" && ListObchodov.Any(x => x.Optiontype == "AKCIE" && x.Price < 0 && x.Ukonceny == false))
+            {
+                var aktObchod = ListObchodov.Single(x => x.Optiontype == "AKCIE" && x.Price < 0 && x.Ukonceny == false);
+                aktObchod.Profit = GetZiskStrata(aktObchod, cena);
+                aktObchod.Ukonceny = true;
+
+                return;
+            }
+
+            if (strana == "BUY" && ListObchodov.Any(x => x.Optiontype == "AKCIE" && x.Price > 0 && x.Ukonceny == false))
+            {
+                var aktObchod = ListObchodov.Single(x => x.Optiontype == "AKCIE" && x.Price > 0 && x.Ukonceny == false);
+                aktObchod.Profit = GetZiskStrata(aktObchod, cena);
+                aktObchod.Ukonceny = true;
+
+                return;
+            }
+
+            var obchod = new BackTest()
+            {
+                Price = double.Parse(cena),
+                StartDate = startDate,
+                Optiontype = typ,
+                Ukonceny = false,
+                Strike = null
+            };
+
+            if (strana == "BUY")
+            {
+                obchod.Price *= -1;
+            }
+
+            ListObchodov.Add(obchod);
+        }
+
+        internal void UkonciOpcnyObchod(string typOpcie, string strike, string cena)
+        {
+            var opcia = ListObchodov.Where(x => x.Optiontype == typOpcie && x.Strike == double.Parse(strike) && x.Price == double.Parse(cena))
+                .Single();
+
+            opcia.Ukonceny = true;
+
+            opcia.Profit = opcia.Price * 100;
+
+        }
+
+        private double GetZiskStrata(BackTest obchod, string cena)
+        {
+            if (obchod.Price > 0)
+            {
+                obchod.Profit = (obchod.Price - double.Parse(cena)) * 100;
+            }
+            else
+            {
+                obchod.Profit = (obchod.Price + double.Parse(cena)) * 100;
+            }
+
+            return obchod.Profit;
+        }
+
+        public double GetZiskStrata(List<Option> optionData, BackTest obchod, DateTime datum, string cenaAkcie)
+        {
+            if (obchod.Price > 0)
+            {
+                obchod.Profit = (obchod.Price - GetCena(optionData, datum,
+                                     obchod.Optiontype,
+                                     obchod.ExpirationDate, obchod.Strike, cenaAkcie)) * 100;
+            }
+            else
+            {
+                obchod.Profit = (obchod.Price + GetCena(optionData, datum, obchod.Optiontype,
+                                     obchod.ExpirationDate, obchod.Strike, cenaAkcie)) * 100;
+            }
+
+            if (obchod.Strike != null & obchod.ExpirationDate <= datum)
+            {
+                obchod.Ukonceny = true;
+            }
+
+            return obchod.Profit;
         }
 
         public List<HistoryStockPrice> LoadVixHistoryStockPrice()
