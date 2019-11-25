@@ -7,10 +7,10 @@ namespace MarketScanner.Types
         public DateTime ExpirationDate { get; set; }
         public DateTime OpenDate { get; set; }
         public DateTime? CloseDate { get; set; }
-        public double OpenPrice { get; set; }
-        public double? ClosePrice { get; set; }
-        public double OpenStockPrice { get; set; }
-        public double? CloseStockPrice { get; set; }
+        public decimal OpenPrice { get; set; }
+        public decimal? ClosePrice { get; set; }
+        public decimal OpenStockPrice { get; set; }
+        public decimal? CloseStockPrice { get; set; }
         public double Strike { get; set; }
         public string Contract { get; set; }
 

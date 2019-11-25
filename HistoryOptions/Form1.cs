@@ -14,6 +14,9 @@ namespace HistoryOptions
     public partial class Form1 : Form
     {
         private bool loading;
+
+        public List<Option> OptionData { get; private set; }
+
         private Core jadro;
 
         public Form1()
@@ -34,16 +37,16 @@ namespace HistoryOptions
         private void button1_Click(object sender, EventArgs e)
         {
             loading = true;
-            var optionData = LoadOptionData();
+            OptionData = LoadOptionData();
 
-            var minDate = optionData.Min(x => x.QuoteDate);
-            var maxDate = optionData.Max(x => x.QuoteDate);
+            var minDate = OptionData.Min(x => x.QuoteDate);
+            var maxDate = OptionData.Max(x => x.QuoteDate);
             SetDateTimePicker(minDate, maxDate);
 
-            lblPrice.Text = optionData.Where(x => x.QuoteDate == maxDate).Max(x => x.StockPrice).ToString();
+            lblPrice.Text = OptionData.Where(x => x.QuoteDate == maxDate).Max(x => x.StockPrice).ToString();
             tabControl1.TabPages.Clear();
 
-            var expirationDates = optionData.Where(x => x.QuoteDate == maxDate).Select(x => x.ExpirationDate).Distinct()
+            var expirationDates = OptionData.Where(x => x.QuoteDate == maxDate).Select(x => x.ExpirationDate).Distinct()
                 .OrderBy(x => x.Date).ToList();
             foreach (var expirationDate in expirationDates)
             {
@@ -52,7 +55,7 @@ namespace HistoryOptions
             }
 
             var curEpirationDate = tabControl1.SelectedTab.Text;
-            FillTabPage(optionData
+            FillTabPage(OptionData
                 .Where(x => x.QuoteDate == maxDate && x.ExpirationDate.ToShortDateString() == curEpirationDate)
                 .OrderBy(x => x.Strike).ToList());
             loading = false;
@@ -154,7 +157,7 @@ namespace HistoryOptions
 
         private void FillListView(DateTime date, bool reLoadTabs = true)
         {
-            var optionData = LoadOptionData();
+            var optionData = OptionData;
 
             if (optionData.Any(x => x.QuoteDate == date))
             {
@@ -203,13 +206,13 @@ namespace HistoryOptions
                     QuoteDate = DateTime.ParseExact(rawData[7], "MM/dd/yyyy", CultureInfo.InvariantCulture),
                     Strike = double.Parse(rawData[8], NumberStyles.Number, CultureInfo.GetCultureInfo("en-us")),
                     Last = rawData[9],
-                    Bid = double.Parse(rawData[10], NumberStyles.Number, CultureInfo.GetCultureInfo("en-us")),
-                    Ask = double.Parse(rawData[11], NumberStyles.Number, CultureInfo.GetCultureInfo("en-us")),
+                    Bid = decimal.Parse(rawData[10], NumberStyles.Number, CultureInfo.GetCultureInfo("en-us")),
+                    Ask = decimal.Parse(rawData[11], NumberStyles.Number, CultureInfo.GetCultureInfo("en-us")),
                     Volume = rawData[12],
                     OpenInterest = rawData[13],
                     Delta = double.Parse(rawData[15], NumberStyles.Number, CultureInfo.GetCultureInfo("en-us")),
 
-                    StockPrice = double.Parse(rawData[1], NumberStyles.Number, CultureInfo.GetCultureInfo("en-us"))
+                    StockPrice = decimal.Parse(rawData[1], NumberStyles.Number, CultureInfo.GetCultureInfo("en-us"))
                 };
 
                 optionData.Add(option);
@@ -290,13 +293,23 @@ namespace HistoryOptions
                 return;
             }
 
-            double profit = 0;
+            decimal profit = 0;
+
+            if (dateTimePicker2.Value.DayOfWeek == DayOfWeek.Saturday || dateTimePicker2.Value.DayOfWeek == DayOfWeek.Sunday)
+            {
+                return;
+            }
 
             ltvTester.Clear();
             FillTesterListViewHeader();
             var ee = new List<ListViewItem>();
             foreach (var obchod in jadro.GetObchody())
             {
+                if (obchod.ExpirationDate > dateTimePicker2.Value)
+                {
+                    obchod.Ukonceny = false;
+                }
+
                 string[] row =
                 {
                     obchod.StartDate.ToShortDateString(),
@@ -304,7 +317,7 @@ namespace HistoryOptions
                     obchod.ExpirationDate?.ToShortDateString(),
                     obchod.Strike.ToString(),
                     obchod.Price.ToString(),
-                    obchod.Ukonceny ? obchod.Profit.ToString() : jadro.GetZiskStrata(LoadOptionData(), obchod, 
+                    obchod.Ukonceny ? obchod.Profit.ToString() : jadro.GetZiskStrata(OptionData, obchod, 
                         dateTimePicker1.Value, lblPrice.Text).ToString(),
                     JeItm(obchod),
                     obchod.Ukonceny.ToString()
@@ -326,7 +339,7 @@ namespace HistoryOptions
 
         private string JeItm(BackTest obchod)
         {
-            if (obchod.Ukonceny || obchod.Optiontype == "AKCIE")
+            if (obchod.Optiontype == "AKCIE")
             {
                 return "";
             }
@@ -449,6 +462,57 @@ namespace HistoryOptions
                     ltvTester.SelectedItems[0].SubItems[4].Text);
                 NacitajObchody();
             }
+        }
+
+        private void button12_Click(object sender, EventArgs e)
+        {
+            dateTimePicker1.Value = dateTimePicker1.MinDate;
+        }
+
+        private void button13_Click(object sender, EventArgs e)
+        {
+            jadro.VymazObchody();
+            NacitajObchody();
+        }
+
+        private void button14_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+            //saveFileDialog1.InitialDirectory = @"C:\";      
+            saveFileDialog1.Title = "Save";
+            saveFileDialog1.DefaultExt = "txt";
+            saveFileDialog1.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
+            saveFileDialog1.RestoreDirectory = true;
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                jadro.UlozObchody(saveFileDialog1.FileName, dateTimePicker2.Value);
+                NacitajObchody();
+            }
+            
+        }
+
+        private void button15_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+            openFileDialog1.RestoreDirectory = true;
+            openFileDialog1.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                dateTimePicker2.Value = jadro.NacitajObchody(openFileDialog1.FileName);
+                NacitajObchody();
+            }
+        }
+
+        private void zmazatObchodToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            jadro.OdstranObchod(ltvTester.SelectedItems[0].Index);
+
+            NacitajObchody();
+        }
+
+        private void button16_Click(object sender, EventArgs e)
+        {
+            textBox2.Text = jadro.PocitajStrategiuButterfly(OptionData);
         }
     }
 }

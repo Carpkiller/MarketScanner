@@ -26,8 +26,8 @@ namespace HistoryOptions
         {
             string result = null;
 
-            double? ZiskoveObchody = 0;
-            double? StratoveObchody = 0;
+            decimal? ZiskoveObchody = 0;
+            decimal? StratoveObchody = 0;
 
             foreach (var trade in obchody.Where(x => x.CloseDate != null))
             {

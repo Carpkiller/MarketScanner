@@ -12,6 +12,6 @@ namespace MarketScanner.Types
         public double Strike { get; set; }
         public Option Call { get; set; }
         public Option Put { get; set; }
-        public double StockPrice { get; set; }
+        public decimal StockPrice { get; set; }
     }
 }

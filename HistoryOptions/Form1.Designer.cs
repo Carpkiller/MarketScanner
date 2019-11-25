@@ -61,7 +61,16 @@
             this.contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.exerciseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.assigmentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.zmazatObchodToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.lblProfit = new System.Windows.Forms.Label();
+            this.button12 = new System.Windows.Forms.Button();
+            this.button13 = new System.Windows.Forms.Button();
+            this.button14 = new System.Windows.Forms.Button();
+            this.button15 = new System.Windows.Forms.Button();
+            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.button16 = new System.Windows.Forms.Button();
+            this.button17 = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.contextMenuStrip2.SuspendLayout();
@@ -356,23 +365,31 @@
             // 
             this.contextMenuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.exerciseToolStripMenuItem,
-            this.assigmentToolStripMenuItem});
+            this.assigmentToolStripMenuItem,
+            this.zmazatObchodToolStripMenuItem});
             this.contextMenuStrip2.Name = "contextMenuStrip2";
-            this.contextMenuStrip2.Size = new System.Drawing.Size(131, 48);
+            this.contextMenuStrip2.Size = new System.Drawing.Size(158, 70);
             // 
             // exerciseToolStripMenuItem
             // 
             this.exerciseToolStripMenuItem.Name = "exerciseToolStripMenuItem";
-            this.exerciseToolStripMenuItem.Size = new System.Drawing.Size(130, 22);
+            this.exerciseToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
             this.exerciseToolStripMenuItem.Text = "Exercise";
             this.exerciseToolStripMenuItem.Click += new System.EventHandler(this.exerciseToolStripMenuItem_Click);
             // 
             // assigmentToolStripMenuItem
             // 
             this.assigmentToolStripMenuItem.Name = "assigmentToolStripMenuItem";
-            this.assigmentToolStripMenuItem.Size = new System.Drawing.Size(130, 22);
+            this.assigmentToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
             this.assigmentToolStripMenuItem.Text = "Assigment";
             this.assigmentToolStripMenuItem.Click += new System.EventHandler(this.assigmentToolStripMenuItem_Click);
+            // 
+            // zmazatObchodToolStripMenuItem
+            // 
+            this.zmazatObchodToolStripMenuItem.Name = "zmazatObchodToolStripMenuItem";
+            this.zmazatObchodToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.zmazatObchodToolStripMenuItem.Text = "Zmazat obchod";
+            this.zmazatObchodToolStripMenuItem.Click += new System.EventHandler(this.zmazatObchodToolStripMenuItem_Click);
             // 
             // lblProfit
             // 
@@ -383,11 +400,83 @@
             this.lblProfit.Size = new System.Drawing.Size(0, 13);
             this.lblProfit.TabIndex = 26;
             // 
+            // button12
+            // 
+            this.button12.Location = new System.Drawing.Point(654, 14);
+            this.button12.Name = "button12";
+            this.button12.Size = new System.Drawing.Size(75, 23);
+            this.button12.TabIndex = 27;
+            this.button12.Text = "Na zaciatok";
+            this.button12.UseVisualStyleBackColor = true;
+            this.button12.Click += new System.EventHandler(this.button12_Click);
+            // 
+            // button13
+            // 
+            this.button13.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button13.Location = new System.Drawing.Point(542, 640);
+            this.button13.Name = "button13";
+            this.button13.Size = new System.Drawing.Size(98, 23);
+            this.button13.TabIndex = 28;
+            this.button13.Text = "Vymazat";
+            this.button13.UseVisualStyleBackColor = true;
+            this.button13.Click += new System.EventHandler(this.button13_Click);
+            // 
+            // button14
+            // 
+            this.button14.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button14.Location = new System.Drawing.Point(646, 640);
+            this.button14.Name = "button14";
+            this.button14.Size = new System.Drawing.Size(98, 23);
+            this.button14.TabIndex = 29;
+            this.button14.Text = "Ulozit obchody";
+            this.button14.UseVisualStyleBackColor = true;
+            this.button14.Click += new System.EventHandler(this.button14_Click);
+            // 
+            // button15
+            // 
+            this.button15.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button15.Location = new System.Drawing.Point(750, 640);
+            this.button15.Name = "button15";
+            this.button15.Size = new System.Drawing.Size(98, 23);
+            this.button15.TabIndex = 30;
+            this.button15.Text = "Nacitat obchody";
+            this.button15.UseVisualStyleBackColor = true;
+            this.button15.Click += new System.EventHandler(this.button15_Click);
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
+            // 
+            // button16
+            // 
+            this.button16.Location = new System.Drawing.Point(1087, 40);
+            this.button16.Name = "button16";
+            this.button16.Size = new System.Drawing.Size(106, 23);
+            this.button16.TabIndex = 31;
+            this.button16.Text = "Butterfly";
+            this.button16.UseVisualStyleBackColor = true;
+            this.button16.Click += new System.EventHandler(this.button16_Click);
+            // 
+            // button17
+            // 
+            this.button17.Location = new System.Drawing.Point(1199, 40);
+            this.button17.Name = "button17";
+            this.button17.Size = new System.Drawing.Size(106, 23);
+            this.button17.TabIndex = 32;
+            this.button17.Text = "Delta neutral";
+            this.button17.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1363, 920);
+            this.Controls.Add(this.button17);
+            this.Controls.Add(this.button16);
+            this.Controls.Add(this.button15);
+            this.Controls.Add(this.button14);
+            this.Controls.Add(this.button13);
+            this.Controls.Add(this.button12);
             this.Controls.Add(this.lblProfit);
             this.Controls.Add(this.button11);
             this.Controls.Add(this.button10);
@@ -454,6 +543,15 @@
         private System.Windows.Forms.ToolStripMenuItem exerciseToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem assigmentToolStripMenuItem;
         private System.Windows.Forms.Label lblProfit;
+        private System.Windows.Forms.Button button12;
+        private System.Windows.Forms.Button button13;
+        private System.Windows.Forms.Button button14;
+        private System.Windows.Forms.Button button15;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.ToolStripMenuItem zmazatObchodToolStripMenuItem;
+        private System.Windows.Forms.Button button16;
+        private System.Windows.Forms.Button button17;
     }
 }
 
