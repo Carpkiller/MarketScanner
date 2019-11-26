@@ -118,11 +118,6 @@ namespace HistoryOptions
                 return decimal.Parse(cenaAkcie);
             }
 
-            //Console.WriteLine(optionMatrix.Count(x => x.Optiontype.ToUpper() == typ));
-            //Console.WriteLine(optionMatrix.Count(x => x.Optiontype.ToUpper() == typ && x.ExpirationDate == expDatum));
-            //Console.WriteLine(optionMatrix.Count(x => x.Optiontype.ToUpper() == typ && x.ExpirationDate == expDatum && x.Strike == strike));
-            //Console.WriteLine(optionMatrix.Count(x => x.Optiontype.ToUpper() == typ && x.ExpirationDate == expDatum && x.Strike == strike && x.QuoteDate <= datum));
-
             return (optionMatrix.Where(x => x.Optiontype.ToUpper() == typ).Where(y => y.ExpirationDate == expDatum).
                 Where(c => c.Strike == strike).Where(d => d.QuoteDate <= datum).OrderByDescending(w => w.QuoteDate).First().Bid +
                     optionMatrix.Where(x => x.Optiontype.ToUpper() == typ).Where(y => y.ExpirationDate == expDatum).
@@ -472,6 +467,215 @@ namespace HistoryOptions
             }
 
             return result;
+        }
+
+        internal string PocitajStrategiuDeltaNeutral(List<Option> optionData)
+        {
+            string result = "";
+
+            var obchodneDni = optionData.Select(x => x.QuoteDate).Distinct().ToList();
+            var obchody = new List<Trade>();
+            bool otvoreny = false;
+            double prvyStrike = 100;
+            double pocetKusov = 0;
+            double pocetOpcii = 3;
+            DateTime? expiracnyDen = null;
+
+            for (int i = 0; i < obchodneDni.Count; i++)
+            {
+                var obchDen = obchodneDni[i];
+                var expirations = optionData.Where(x => x.QuoteDate >= obchDen).Select(x => x.ExpirationDate).Distinct().OrderBy(x => x.Date).ToList();
+
+                if (!otvoreny)
+                {
+                    expiracnyDen = expirations[2];
+                }
+
+                var data = optionData.Where(x => x.QuoteDate == obchDen && x.ExpirationDate == expiracnyDen).ToList();
+                var optionMatrix = GetOptionMatrix(data);
+
+                var deltaStrike = GetDeltaStrike(data);
+                var atmRow = optionMatrix[deltaStrike];
+
+                //Console.WriteLine(otvoreny ? $"Aktualna delta portfolia {Math.Abs(GetDelta(data, prvyStrike, "PUT") * 300 + (double)pocetKusov)}" : null);
+
+                if (!otvoreny)
+                {
+                    prvyStrike = atmRow.Strike;
+                    otvoreny = true;
+                    expiracnyDen = atmRow.ExpirationDate;
+
+                    var hodnotaPut = MarketStrategies.GetHodnotaOptionPutBuy(optionMatrix, atmRow.Strike);
+                    var obchodPutStrana = new Trade()
+                    {
+                        OpenDate = obchDen,
+                        Strike = prvyStrike,
+                        OpenPrice = hodnotaPut,
+                        Contract = "PUT",
+                        OpenStockPrice = atmRow.StockPrice,
+                        ExpirationDate = atmRow.ExpirationDate,
+                        PocetKontraktov = (decimal)pocetOpcii
+                    };
+
+                    var delta = GetDelta(data, atmRow.Strike, "PUT") * (double)obchodPutStrana.PocetKontraktov;
+                    pocetKusov = Math.Round(delta * 100)*(-1);
+                    var obchodAkcia = new Trade()
+                    {
+                        OpenDate = obchDen,
+                        OpenPrice = atmRow.StockPrice,
+                        Contract = "AKCIE",
+                        ExpirationDate = atmRow.ExpirationDate,
+                        OpenStockPrice = atmRow.StockPrice,
+                        PocetKontraktov = (decimal)pocetKusov
+                    };
+
+
+                    result += $"{obchDen.ToShortDateString()}  Nakupenie PUT na Strike {prvyStrike} , cena Put {hodnotaPut}";
+                    result += Environment.NewLine;
+                    result += $"{obchDen.ToShortDateString()}  Nakupenie akcii na cene {atmRow.StockPrice} pocet kusov {pocetKusov}";
+                    result += Environment.NewLine;
+                    
+                    obchody.Add(obchodAkcia);
+                    obchody.Add(obchodPutStrana);
+                }
+                else if (otvoreny && Math.Abs(GetDelta(data, prvyStrike, "PUT")*100* pocetOpcii + (double)pocetKusov) > 10)
+                {
+                    var obchod = obchody.Last();
+
+                    if (GetDelta(data, prvyStrike, "PUT")*100* pocetOpcii + (double)pocetKusov < 0)
+                    {
+                        var prikupitAkcii =
+                            (Math.Round(GetDelta(data, prvyStrike, "PUT") * 100 * pocetOpcii + (double) pocetKusov)) * (-1);
+
+                        result += $"{obchDen.ToShortDateString()}  Prikupenie akcii({prikupitAkcii}) pri cene {atmRow.StockPrice} " +
+                                  $"aktualna delta {(Math.Round(GetDelta(data, prvyStrike, "PUT") * 100 + (double)pocetKusov))}";
+                        result += Environment.NewLine;
+
+                        pocetKusov += prikupitAkcii;
+
+                        var obchodAkcia = new Trade()
+                        {
+                            OpenDate = obchDen,
+                            OpenPrice = atmRow.StockPrice,
+                            Contract = "AKCIE",
+                            ExpirationDate = atmRow.ExpirationDate,
+                            OpenStockPrice = atmRow.StockPrice,
+                            PocetKontraktov = (decimal)prikupitAkcii
+                        };
+
+                        obchody.Add(obchodAkcia);
+                        
+
+                    }
+                    else if (GetDelta(data, prvyStrike, "PUT") * 100 * pocetOpcii + (double)pocetKusov > 0)
+                    {
+                        var predatAkcii =
+                            (Math.Round(GetDelta(data, prvyStrike, "PUT") * 100 * pocetOpcii + (double)pocetKusov)) * (-1);
+
+                        result += $"{obchDen.ToShortDateString()}  Predanie akcii({predatAkcii}) pri cene {atmRow.StockPrice} " +
+                                  $"aktualna delta {(Math.Round(GetDelta(data, prvyStrike, "PUT") * 100 + (double)pocetKusov))}";
+                        result += Environment.NewLine;
+
+                        pocetKusov += predatAkcii;
+
+                        var obchodAkcia = new Trade()
+                        {
+                            OpenDate = obchDen,
+                            OpenPrice = atmRow.StockPrice,
+                            Contract = "AKCIE",
+                            ExpirationDate = atmRow.ExpirationDate,
+                            OpenStockPrice = atmRow.StockPrice,
+                            PocetKontraktov = (decimal)predatAkcii
+                        };
+
+                        obchody.Add(obchodAkcia);
+                    }
+                }
+
+                if (otvoreny && obchDen == expiracnyDen || obchDen == obchodneDni.Last() || obchodneDni[i+1] > expiracnyDen)
+                {
+                    result += $"{obchDen.ToShortDateString()}  Ukoncenie obchodu , cena akcie {atmRow.StockPrice}";
+                    result += Environment.NewLine;
+
+                    decimal totalProfit = 0;
+
+                    foreach (var obchod in obchody.Where(x => x.CloseDate == null))
+                    {
+                        if (obchod.Contract == "PUT")
+                        {
+                            var hodnotaPut = MarketStrategies.GetHodnotaOptionPutSell(optionMatrix, obchod.Strike);
+
+                            totalProfit += (obchod.OpenPrice + hodnotaPut)*100* (decimal)pocetOpcii*(-1);
+                            obchod.ClosePrice = hodnotaPut;
+                        }
+                        else
+                        {
+                            totalProfit += (obchod.OpenPrice - atmRow.StockPrice) * obchod.PocetKontraktov*(-1);
+                            obchod.ClosePrice = atmRow.StockPrice;
+                        }
+
+                        obchod.CloseDate = obchDen;
+                        obchod.CloseStockPrice = atmRow.StockPrice;
+                    }
+
+                    result += $"Total profit {totalProfit}";
+                    result += Environment.NewLine;
+                    result += $"-----------------------------";
+                    result += Environment.NewLine;
+
+                    otvoreny = false;
+                }
+
+                result += $"{obchDen.ToShortDateString()}  Priebezny P/L({atmRow.StockPrice}({PocitajPocetAkcii(obchody)}))   -  {PocitajPriebeznyProfit(obchody, optionMatrix, (decimal)pocetOpcii)}";
+                result += Environment.NewLine;
+            }
+
+            //result = Statistics.ShowTrades(obchody);
+            result += Environment.NewLine;
+            result += Statistics.ShowTotalStatistic(obchody);
+            result += Environment.NewLine;
+            result += Environment.NewLine;
+            result += Statistics.MonthlyResults(obchody);
+
+            return result;
+        }
+
+        private decimal PocitajPocetAkcii(List<Trade> obchody)
+        {
+            decimal pocetAkcii = 0;
+
+            foreach (var trade in obchody.Where(x => x.CloseDate == null))
+            {
+                pocetAkcii += trade.PocetKontraktov;
+            }
+
+            return pocetAkcii;
+        }
+
+        private decimal PocitajPriebeznyProfit(List<Trade> obchody, List<OptionMatrixRow> optionMatrix, decimal pocetOpcii)
+        {
+            decimal totalProfit = 0;
+
+            foreach (var obchod in obchody.Where(x => x.CloseDate == null))
+            {
+                if (obchod.Contract == "PUT")
+                {
+                    var hodnotaPut = MarketStrategies.GetHodnotaOptionPutSell(optionMatrix, obchod.Strike);
+
+                    totalProfit += (obchod.OpenPrice + hodnotaPut) * 100 * pocetOpcii * (-1);
+                }
+                else
+                {
+                    totalProfit += (obchod.OpenPrice - optionMatrix.First().StockPrice) * obchod.PocetKontraktov * (-1);
+                }
+            }
+
+            return totalProfit;
+        }
+
+        private double GetDelta(List<Option> data, double strike, string type)
+        {
+            return data.Single(x => x.Optiontype.ToUpper() == type && x.Strike == strike).Delta;
         }
 
         internal string PocitajStrategiuButterfly(List<Option> optionData)

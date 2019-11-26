@@ -465,6 +465,7 @@
             this.button17.TabIndex = 32;
             this.button17.Text = "Delta neutral";
             this.button17.UseVisualStyleBackColor = true;
+            this.button17.Click += new System.EventHandler(this.button17_Click);
             // 
             // Form1
             // 

@@ -13,6 +13,7 @@ namespace MarketScanner.Types
         public decimal? CloseStockPrice { get; set; }
         public double Strike { get; set; }
         public string Contract { get; set; }
+        public decimal PocetKontraktov { get; set; }
 
         public Trade()
         {

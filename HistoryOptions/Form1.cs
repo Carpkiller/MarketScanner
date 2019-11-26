@@ -63,6 +63,11 @@ namespace HistoryOptions
 
         private void SetDateTimePicker(DateTime minDate, DateTime maxDate)
         {
+            if (dateTimePicker1.MinDate < maxDate)
+            {
+                dateTimePicker1.MaxDate = maxDate;
+                dateTimePicker1.MinDate = minDate;
+            }
             dateTimePicker1.MinDate = minDate;
             dateTimePicker1.MaxDate = maxDate;
             dateTimePicker1.Value = maxDate;
@@ -513,6 +518,11 @@ namespace HistoryOptions
         private void button16_Click(object sender, EventArgs e)
         {
             textBox2.Text = jadro.PocitajStrategiuButterfly(OptionData);
+        }
+
+        private void button17_Click(object sender, EventArgs e)
+        {
+            textBox2.Text = jadro.PocitajStrategiuDeltaNeutral(OptionData);
         }
     }
 }

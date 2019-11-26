@@ -28,10 +28,18 @@ namespace HistoryOptions
 
             decimal? ZiskoveObchody = 0;
             decimal? StratoveObchody = 0;
+            decimal? vysledokObchodu = 0;
 
             foreach (var trade in obchody.Where(x => x.CloseDate != null))
             {
-                var vysledokObchodu = trade.ClosePrice*(-1)*100 - trade.OpenPrice*100;
+                if (trade.Contract == "AKCIE")
+                {
+                    vysledokObchodu = (trade.OpenPrice - trade.ClosePrice) * trade.PocetKontraktov * (-1);
+                }
+                else
+                {
+                    vysledokObchodu = trade.ClosePrice * (-1) * 100 * trade.PocetKontraktov - trade.OpenPrice * 100 * trade.PocetKontraktov;
+                }
 
                 if (vysledokObchodu > 0)
                 {
