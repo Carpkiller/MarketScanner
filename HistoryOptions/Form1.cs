@@ -524,5 +524,10 @@ namespace HistoryOptions
         {
             textBox2.Text = jadro.PocitajStrategiuDeltaNeutral(OptionData);
         }
+
+        private void button18_Click(object sender, EventArgs e)
+        {
+            textBox2.Text = jadro.PocitajStrategiuCalendar(OptionData);
+        }
     }
 }
