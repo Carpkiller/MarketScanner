@@ -674,9 +674,9 @@ namespace HistoryOptions
             bool otvoreny = false;
             decimal pocetKontraktov = 20;
 
-            for (int ii = 0; ii < 4; ii++)
+            for (int ii = 3; ii < 4; ii++)
             {
-                for (int jj = ii + 1; jj < 6; jj++)
+                for (int jj = ii + 1; jj < 5; jj++)
                 {
                     result += $" -----------------------------";
                     result += Environment.NewLine;
@@ -705,6 +705,10 @@ namespace HistoryOptions
                             var dataBuy = optionData
                                 .Where(x => x.QuoteDate == obchDen && x.ExpirationDate == expiracnyDenBuy).ToList();
                             var optionMatrixBuy = GetOptionMatrix(dataBuy);
+                            if (dataBuy.Count == 0)
+                            {
+                                break;
+                            }
 
                             var dataSell = optionData
                                 .Where(x => x.QuoteDate == obchDen && x.ExpirationDate == expiracnyDenSell).ToList();
@@ -743,9 +747,9 @@ namespace HistoryOptions
 
                             obchody.Add(obchod);
 
-                            //result +=
-                            //    $"{obchDen.ToShortDateString()}  ({atmRowSell.StockPrice}) Nakupenie kalendaru na Strike {atmRowSell.Strike} , cena {hodnota}, pocet kontraktov({pocetKontraktov}) a hodnota {pocetKontraktov * hodnota * 100} ";
-                            //result += Environment.NewLine;
+                            result +=
+                                $"{obchDen.ToShortDateString()}  ({atmRowSell.StockPrice}) Nakupenie kalendaru na Strike {atmRowSell.Strike} , cena {hodnota}, pocet kontraktov({pocetKontraktov}) a hodnota {pocetKontraktov * hodnota * 100} ";
+                            result += Environment.NewLine;
 
                             otvoreny = true;
                         }
@@ -767,15 +771,15 @@ namespace HistoryOptions
                             var hodnota = MarketStrategies.GetHodnotaOptionPutBuy(optionMatrixSell, obchod.Strike)
                                           + MarketStrategies.GetHodnotaOptionPutSell(optionMatrixBuy, obchod.Strike);
 
-                            //result +=
-                            //    $"{obchDen.ToShortDateString()}  ({atmRowSell.StockPrice}) Priebezny P/L {(obchod.OpenPrice + hodnota) * 100 * (-1) * obchod.PocetKontraktov}";
-                            //result += Environment.NewLine;
+                            result +=
+                                $"{obchDen.ToShortDateString()}  ({atmRowSell.StockPrice}) Priebezny P/L {(obchod.OpenPrice + hodnota) * 100 * (-1) * obchod.PocetKontraktov}";
+                            result += Environment.NewLine;
 
                             if (obchod.OpenPrice + hodnota < obchod.OpenPrice * (decimal) 0.15 * (-1))
                             {
-                                //result +=
-                                //    $"{obchDen.ToShortDateString()}  Ukoncenie obchodu , cena kalendaru {hodnota}";
-                                //result += Environment.NewLine;
+                                result +=
+                                    $"{obchDen.ToShortDateString()}  Ukoncenie obchodu , cena kalendaru {hodnota}";
+                                result += Environment.NewLine;
 
                                 obchod.CloseDate = obchDen;
                                 obchod.ClosePrice = hodnota;
@@ -783,18 +787,18 @@ namespace HistoryOptions
 
                                 otvoreny = false;
 
-                                //result +=
-                                //    $"Total profit {(obchod.OpenPrice + hodnota) * 100 * (-1) * obchod.PocetKontraktov}";
-                                //result += Environment.NewLine;
-                                //result += $"-----------------------------";
-                                //result += Environment.NewLine;
+                                result +=
+                                    $"Total profit {(obchod.OpenPrice + hodnota) * 100 * (-1) * obchod.PocetKontraktov}";
+                                result += Environment.NewLine;
+                                result += $"-----------------------------";
+                                result += Environment.NewLine;
                             }
 
                             if (otvoreny && hodnota * (-1) < obchod.OpenPrice * (decimal) 0.5)
                             {
-                                //result +=
-                                //    $"{obchDen.ToShortDateString()}  *Ukoncenie obchodu , cena kalendaru {hodnota}";
-                                //result += Environment.NewLine;
+                                result +=
+                                    $"{obchDen.ToShortDateString()}  *Ukoncenie obchodu , cena kalendaru {hodnota}";
+                                result += Environment.NewLine;
 
                                 obchod.CloseDate = obchDen;
                                 obchod.ClosePrice = hodnota;
@@ -802,11 +806,11 @@ namespace HistoryOptions
 
                                 otvoreny = false;
 
-                                //result +=
-                                //    $"Total profit {(obchod.OpenPrice + hodnota) * 100 * (-1) * obchod.PocetKontraktov}";
-                                //result += Environment.NewLine;
-                                //result += $"-----------------------------";
-                                //result += Environment.NewLine;
+                                result +=
+                                    $"Total profit {(obchod.OpenPrice + hodnota) * 100 * (-1) * obchod.PocetKontraktov}";
+                                result += Environment.NewLine;
+                                result += $"-----------------------------";
+                                result += Environment.NewLine;
                             }
 
                             if (otvoreny && (obchDen == expiracnyDenSell || obchDen == obchodneDni.Last() ||

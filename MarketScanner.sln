@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.645
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarketScanner", "MarketScanner\MarketScanner.csproj", "{42D0276C-4ACF-4EDC-8EFA-F1437876F308}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HistoryOptions", "HistoryOptions\HistoryOptions.csproj", "{275B0507-90CC-4D12-A325-1EC076EB3041}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortfolioSimulator", "PortfolioSimulator\PortfolioSimulator.csproj", "{EC5AD113-E5A0-4E22-9B35-CFAF0B48184E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IB", "IB\IB.csproj", "{43ACE4CC-DA6E-4368-ADB4-34A24BC91FD1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,8 +35,15 @@ Global
 		{EC5AD113-E5A0-4E22-9B35-CFAF0B48184E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC5AD113-E5A0-4E22-9B35-CFAF0B48184E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC5AD113-E5A0-4E22-9B35-CFAF0B48184E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43ACE4CC-DA6E-4368-ADB4-34A24BC91FD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43ACE4CC-DA6E-4368-ADB4-34A24BC91FD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43ACE4CC-DA6E-4368-ADB4-34A24BC91FD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43ACE4CC-DA6E-4368-ADB4-34A24BC91FD1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DEAB6C5F-8BA7-4DCA-9C4F-3E7EBC1D823E}
 	EndGlobalSection
 EndGlobal
