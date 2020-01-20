@@ -11,17 +11,21 @@ using System.Windows.Forms;
 using MarketScanner.Types;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using VSLee.IEXSharp;
+using VSLee.IEXSharp.Model.Stock.Request;
 
 namespace MarketScanner
 {
     public class Jadro
     {
         private string url;
+        private string token;
         private List<Symbols> ListSymbolov; 
 
-        public Jadro(string url)
+        public Jadro(string url, string token)
         {
             this.url = url;
+            this.token = $"&token={token}";
         }
 
         public List<Symbols> LoadSymbols()
@@ -151,23 +155,44 @@ namespace MarketScanner
 
         private string CallApi(string command)
         {
-            using (HttpClient client = new HttpClient())
+            //using (HttpClient client = new HttpClient())
+            //{
+
+            //    client.DefaultRequestHeaders.Accept.Clear();
+            //    client.DefaultRequestHeaders.Accept.Add(
+            //        new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+            //    //For IP-API
+            //    client.BaseAddress = new Uri(url + command + token);
+            //    HttpResponseMessage response = client.GetAsync(url + command + token).GetAwaiter().GetResult();
+            //    if (response.IsSuccessStatusCode)
+            //    {
+            //        return response.Content.ReadAsStringAsync().Result;
+            //    }
+
+            //    return null;
+            //}
+
+
+            HttpClient client = new HttpClient
             {
+                BaseAddress = new Uri("https://cloud.iexapis.com/beta/")
+            };
+            var publish = "pk_76cf12829196474ab3994a0fc19cf39f";
+            var secret = "sk_1155d5c45c1c418f9c57af731bb466a0";
 
-                client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Accept.Add(
-                    new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+            client.DefaultRequestHeaders.Add("User-Agent",
+                "zh-code.com IEX API V2 .Net Wrapper"); //stable / stock / msft / batch ? types = chart / 1y & token = sk_1155d5c45c1c418f9c57af731bb466a0
 
-                //For IP-API
-                client.BaseAddress = new Uri(url + command);
-                HttpResponseMessage response = client.GetAsync(url + command).GetAwaiter().GetResult();
-                if (response.IsSuccessStatusCode)
-                {
-                    return response.Content.ReadAsStringAsync().Result;
-                }
-
-                return null;
+            HttpResponseMessage response = client
+                .GetAsync($"stock/{command}/batch?types=chart&range=1y&last=10&token={secret}").GetAwaiter()
+                .GetResult();
+            if (response.IsSuccessStatusCode)
+            {
+                return response.Content.ReadAsStringAsync().Result;
             }
+
+            return null;
         }
 
         public List<HistoryStockPrice> GetPiatkoveCeny(string symbol, bool vixVacsi, int hodnotaVix, DayOfWeek dayOfWeek = DayOfWeek.Friday)
@@ -176,23 +201,29 @@ namespace MarketScanner
 
             var res = new List<HistoryStockPrice>();
 
-            var command = string.Format($"stock/{symbol}/chart/1y");
+            var command = string.Format($"{symbol}");
 
             var result = CallApi(command);
             double stvrtokClose = 0;
-            var jsonobj = JArray.Parse(result);
-            for (int i = 0; i < jsonobj.Count; i++)
+            var jsonobj = JObject.Parse(result);
+            var c = jsonobj.First.First;
+
+            foreach (var VARIABLE in c)
             {
-                var stockCeny = JsonConvert.DeserializeObject<HistoryStockPrice>(jsonobj[i].ToString());
-                if (DateTime.ParseExact(stockCeny.date, "yyyy-MM-dd", CultureInfo.InvariantCulture).DayOfWeek == dayOfWeek
-                    && ((vixVacsi && vixCeny.Single(x => x.date == stockCeny.date).open > hodnotaVix) 
-                    || (!vixVacsi && vixCeny.Single(x => x.date == stockCeny.date).open < hodnotaVix))
-                    )  // 2018-11-19
-                {
-                    var stockCenyPredchadzajuci = JsonConvert.DeserializeObject<HistoryStockPrice>(jsonobj[i].ToString());
+                
+            //}
+            //for (int i = 0; i < c.Count(); i++)
+            //{
+                var stockCeny = JsonConvert.DeserializeObject<HistoryStockPrice>(VARIABLE.ToString());
+              //  if (DateTime.ParseExact(stockCeny.date, "yyyy-MM-dd", CultureInfo.InvariantCulture).DayOfWeek == dayOfWeek
+                //    && ((vixVacsi && vixCeny.Single(x => x.date == stockCeny.date).open > hodnotaVix) 
+                //    || (!vixVacsi && vixCeny.Single(x => x.date == stockCeny.date).open < hodnotaVix))
+              //      )  // 2018-11-19
+              //  {
+                    var stockCenyPredchadzajuci = JsonConvert.DeserializeObject<HistoryStockPrice>(VARIABLE.ToString());
                     stockCeny.open = stockCenyPredchadzajuci.open;
                     res.Add(stockCeny);
-                }
+              //  }
             }
 
             return res;

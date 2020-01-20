@@ -17,8 +17,9 @@ namespace MarketScanner
         private static void Main(string[] args)
         {
             var IEXTrading_API_URL = "https://api.iextrading.com/1.0/";
+            string Token = "sk_1155d5c45c1c418f9c57af731bb466a0";
 
-            Jadro jadro = new Jadro(IEXTrading_API_URL);
+        Jadro jadro = new Jadro(IEXTrading_API_URL, Token);
             jadro.LoadSymbols();
           //  jadro.NacitajVsetky();
             jadro.NacitajVsetkyDividendoveSpolocnosti();

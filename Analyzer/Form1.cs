@@ -25,7 +25,8 @@ namespace Analyzer
         private int pocet15az25perc = 0;
         private int pocetnad25perc = 0;
 
-        private string IEXTrading_API_URL = "https://api.iextrading.com/1.0/";
+        private string IEXTrading_API_URL = "https://cloud.iexapis.com/v1/";
+        private string Token = "pk_76cf12829196474ab3994a0fc19cf39f";
 
         public Form1()
         {
@@ -72,30 +73,30 @@ namespace Analyzer
             pocet15az25perc = 0;
             pocetnad25perc = 0;
 
-            Jadro jadro = new Jadro(IEXTrading_API_URL);
+            Jadro jadro = new Jadro(IEXTrading_API_URL, Token);
             List<HistoryStockPrice> res = jadro.GetPiatkoveCeny(textBox1.Text, checkBox1.Checked, int.Parse(textBox3.Text));
 
             Statistics stats = jadro.GetStatistics(res, listView1);
 
             textBox2.Text = string.Empty;
-            textBox2.Text = "Pocet pod 0.5          - " + pocetPod05 + Environment.NewLine +
-                            "Pocet medzi 0.5 - 1.0  - " + pocet05az1 + Environment.NewLine +
-                            "Pocet medzi 1 - 1.5    - " + pocet1az15 + Environment.NewLine +
-                            "Pocet medzi 1.5 - 2.5  - " + pocet15az25 + Environment.NewLine +
-                            "Pocet nad 2.5          - " + pocetnad25 +
+            textBox2.Text = "Pocet pod 0.5          - " + stats.PocetPod05 + Environment.NewLine +
+                            "Pocet medzi 0.5 - 1.0  - " + stats.Pocet05Az1 + Environment.NewLine +
+                            "Pocet medzi 1 - 1.5    - " + stats.Pocet1Az15 + Environment.NewLine +
+                            "Pocet medzi 1.5 - 2.5  - " + stats.Pocet15Az25 + Environment.NewLine +
+                            "Pocet nad 2.5          - " + stats.Pocetnad25 +
                             Environment.NewLine + " ================================ " + Environment.NewLine +
-                            "Pocet pod 0.5 %         - " + pocetPod05perc + Environment.NewLine +
-                            "Pocet medzi 0.5 - 1.0 % - " + pocet05az1perc + Environment.NewLine +
-                            "Pocet medzi 1 - 1.5 %   - " + pocet1az15perc + Environment.NewLine +
-                            "Pocet medzi 1.5 - 2.5 % - " + pocet15az25perc + Environment.NewLine +
-                            "Pocet nad 2.5 %         - " + pocetnad25perc;
+                            "Pocet pod 0.5 %         - " + stats.PocetPod05Perc + Environment.NewLine +
+                            "Pocet medzi 0.5 - 1.0 % - " + stats.Pocet05Az1Perc + Environment.NewLine +
+                            "Pocet medzi 1 - 1.5 %   - " + stats.Pocet1Az15Perc + Environment.NewLine +
+                            "Pocet medzi 1.5 - 2.5 % - " + stats.Pocet15Az25Perc + Environment.NewLine +
+                            "Pocet nad 2.5 %         - " + stats.Pocetnad25Perc;
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
             InitColumnCompletScan();
 
-            Jadro jadro = new Jadro(IEXTrading_API_URL);
+            Jadro jadro = new Jadro(IEXTrading_API_URL, Token);
 
             var symbols = File.ReadAllLines("SP500.txt");
             //jadro.LoadSymbols();
@@ -188,7 +189,7 @@ namespace Analyzer
 
         private string GetDenneLimity(System.DayOfWeek day)
         {
-            Jadro jadro = new Jadro(IEXTrading_API_URL);
+            Jadro jadro = new Jadro(IEXTrading_API_URL, Token);
             List<HistoryStockPrice> res = jadro.GetPiatkoveCeny(textBox1.Text, checkBox1.Checked, int.Parse(textBox3.Text), day);
 
             Statistics stats = jadro.GetStatistics(res);
