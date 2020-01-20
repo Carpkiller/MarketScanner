@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using MarketScanner.Types;
@@ -114,6 +115,11 @@ namespace HistoryOptions
         public decimal GetCena(List<Option> optionMatrix, DateTime datum, string typ, DateTime? expDatum, double? strike, string cenaAkcie)
         {
             if (typ == "AKCIE")
+            {
+                return decimal.Parse(cenaAkcie);
+            }
+
+            if (typ == "COMPLEX")
             {
                 return decimal.Parse(cenaAkcie);
             }
@@ -331,6 +337,18 @@ namespace HistoryOptions
             ListObchodov.Add(obchod);
         }
 
+        internal decimal GetAktualRv(List<Option> opt1, List<Option> opt2)
+        {
+            if (opt1.Count == 0)
+            {
+                return 0;
+            }
+
+            var calendarValue = MarketStrategies.GetHodnotaCalendarPutBuy0_2(GetOptionMatrix(opt1), GetOptionMatrix(opt2), opt2[GetDeltaStrike(opt2)*2].Strike);
+
+            return calendarValue / opt1.First().StockPrice * 100;
+        }
+
         internal void PridajObchod(string typ, string strana, DateTime startDate, string cena)
         {
             if (ListObchodov == null)
@@ -400,7 +418,35 @@ namespace HistoryOptions
 
         public decimal GetZiskStrata(List<Option> optionData, BackTest obchod, DateTime datum, string cenaAkcie)
         {
-            if (obchod.Price > 0)
+            if (obchod.Optiontype == "Calendar0_2")
+            {
+                var opt1 = optionData.Where(x => x.QuoteDate == datum && x.ExpirationDate == obchod.ExpirationDate)
+                        .OrderBy(x => x.Strike)
+                        .ToList();
+                var opt2 = optionData.Where(x => x.QuoteDate == datum && x.ExpirationDate == obchod.ExpirationDate2)
+                           .OrderBy(x => x.Strike)
+                           .ToList();
+
+                if (opt1.Count == 0)
+                {
+                    int i = 1;
+                    while (opt1.Count == 0)
+                    {
+                        opt1 = optionData.Where(x => x.QuoteDate == datum.AddDays(-i) && x.ExpirationDate == obchod.ExpirationDate)
+                        .OrderBy(x => x.Strike)
+                        .ToList();
+
+                        opt2 = optionData.Where(x => x.QuoteDate == datum.AddDays(-i) && x.ExpirationDate == obchod.ExpirationDate2)
+                           .OrderBy(x => x.Strike)
+                           .ToList();
+
+                        i++;
+                    }                    
+                }
+
+                obchod.Profit = (MarketStrategies.GetHodnotaCalendarPutBuy0_2(GetOptionMatrix(opt1), GetOptionMatrix(opt2), obchod.Strike.Value) - obchod.Price) * 100;
+            }
+            else if (obchod.Price > 0)
             {
                 obchod.Profit = (obchod.Price - GetCena(optionData, datum,
                                      obchod.Optiontype,
@@ -412,7 +458,7 @@ namespace HistoryOptions
                                      obchod.ExpirationDate, obchod.Strike, cenaAkcie)) * 100;
             }
 
-            if (obchod.Strike != null & obchod.ExpirationDate <= datum)
+            if (obchod.Strike != null && obchod.ExpirationDate <= datum)
             {
                 obchod.Ukonceny = true;
             }
@@ -474,9 +520,9 @@ namespace HistoryOptions
             string result = "";
 
             var obchodneDni = optionData.Select(x => x.QuoteDate).Distinct().ToList();                         
-            double pocetOpcii = 3;
+            double pocetOpcii = 10;
             
-            for (int qq = 0; qq < 6; qq++)
+            for (int qq = 2; qq < 3; qq++)
             {
                 double prvyStrike = 100;
                 DateTime? expiracnyDen = null;
@@ -657,6 +703,88 @@ namespace HistoryOptions
             }
 
             return result;
+        }
+
+        internal string Statistiky(List<Option> OptionData)
+        {
+            var obchodneDni = OptionData.Select(x => x.QuoteDate).Distinct().ToList();
+            List<Tuple<int, decimal>> listVysledkov = new List<Tuple<int, decimal>>();
+
+            for (int i = 0; i < obchodneDni.Count; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    var obchDen = obchodneDni[i];
+                    var expirations = OptionData.Where(x => x.QuoteDate >= obchDen).Select(x => x.ExpirationDate).Distinct().OrderBy(x => x.Date).ToList();
+
+                    var opt1 = OptionData.Where(x => x.QuoteDate == obchDen && x.ExpirationDate == expirations[j])
+                            .OrderBy(x => x.Strike)
+                            .ToList();
+                    var opt2 = OptionData.Where(x => x.QuoteDate == obchDen && x.ExpirationDate == expirations[j+2])
+                               .OrderBy(x => x.Strike)
+                               .ToList();
+
+                    var hodnotaCalen = MarketStrategies.GetHodnotaCalendarPutBuy0_2(GetOptionMatrix(opt1), GetOptionMatrix(opt2), opt2[GetDeltaStrike(opt2) * 2].Strike);
+                    if (hodnotaCalen == 0)
+                    {
+                        continue;
+                    }
+                    var pocetDni = (expirations[j] - obchDen).Days;
+
+                    listVysledkov.Add(new Tuple<int, decimal>(pocetDni, hodnotaCalen));
+                }
+            }
+
+            Dictionary<int, Tuple<decimal, int>> results = new Dictionary<int, Tuple<decimal, int>>();
+
+            foreach (var item in listVysledkov)
+            {
+                if (results.ContainsKey(item.Item1))
+                {
+                    results[item.Item1] = new Tuple<decimal, int>(results[item.Item1].Item1 + item.Item2, results[item.Item1].Item2 + 1);
+                }
+                else
+                {
+                    results.Add(item.Item1, new Tuple<decimal, int>(item.Item2, 1));
+                }                
+            }
+
+            StringBuilder sb = new StringBuilder();
+            
+            foreach (var item in results.OrderBy(x => x.Key))
+            {
+                sb.AppendLine($"{item.Key}   - {item.Value.Item2}  {item.Value.Item1 / item.Value.Item2}  max({listVysledkov.Where(x => x.Item1 == item.Key).Max().Item2})  min({listVysledkov.Where(x => x.Item1 == item.Key).Min().Item2})");
+            }
+
+            
+
+            return sb.ToString();
+        }
+
+        internal void PridajComplexObchod(string typ, DateTime startDate, string expiracia, List<Option> opt1, List<Option> opt2, ListViewItem.ListViewSubItemCollection subItems)
+        {
+            if (ListObchodov == null)
+            {
+                ListObchodov = new List<BackTest>();
+            }
+
+            var opt1MatrixRow = GetOptionMatrix(opt1);
+            var opt2MatrixRow = GetOptionMatrix(opt2);
+
+            var obchod = new BackTest()
+            {
+                Strike = opt2[GetDeltaStrike(opt2) * 2].Strike,
+                Delta = double.Parse(subItems[2].Text),
+                Price = MarketStrategies.GetHodnotaCalendarPutBuy0_2(opt1MatrixRow, opt2MatrixRow, opt2[GetDeltaStrike(opt2) * 2].Strike),
+                StartDate = startDate,
+                ExpirationDate = DateTime.Parse(expiracia),
+                ExpirationDate2 = opt2.First().ExpirationDate,
+                Optiontype = typ,
+                Ukonceny = false,
+                CalendarRV = MarketStrategies.GetHodnotaCalendarPutBuy0_2(opt1MatrixRow, opt2MatrixRow, opt2[GetDeltaStrike(opt2) * 2].Strike) / opt1MatrixRow.First().StockPrice * 100
+            };
+
+            ListObchodov.Add(obchod);
         }
 
         private decimal PocitajPocetAkcii(List<Trade> obchody)

@@ -132,6 +132,27 @@ namespace HistoryOptions
             listView1.Refresh();
         }
 
+        private double GetAtmStrike(List<Option> optionData)
+        {
+            int i = 0;
+            int index = 0;
+            double previousDelta = 1;
+
+            foreach (var option in optionData.Where(x =>
+                x.QuoteDate == optionData[1].QuoteDate && x.Optiontype.ToUpper() == "CALL"))
+            {
+                if (Math.Abs(option.Delta - 0.5) < previousDelta)
+                {
+                    index = i;
+                    previousDelta = Math.Abs(option.Delta - 0.5);
+                }
+
+                i++;
+            }
+
+            return optionData[index].Strike;
+        }
+
         private void FillListViewHeader()
         {
             listView1.Columns.Clear();
@@ -300,10 +321,10 @@ namespace HistoryOptions
 
             decimal profit = 0;
 
-            if (dateTimePicker2.Value.DayOfWeek == DayOfWeek.Saturday || dateTimePicker2.Value.DayOfWeek == DayOfWeek.Sunday)
-            {
-                return;
-            }
+            //if (dateTimePicker2.Value.DayOfWeek == DayOfWeek.Saturday || dateTimePicker2.Value.DayOfWeek == DayOfWeek.Sunday)
+            //{
+            //    return;
+            //}
 
             ltvTester.Clear();
             FillTesterListViewHeader();
@@ -322,10 +343,11 @@ namespace HistoryOptions
                     obchod.ExpirationDate?.ToShortDateString(),
                     obchod.Strike.ToString(),
                     obchod.Price.ToString(),
-                    obchod.Ukonceny ? obchod.Profit.ToString() : jadro.GetZiskStrata(OptionData, obchod, 
-                        dateTimePicker1.Value, lblPrice.Text).ToString(),
+                    obchod.Ukonceny ? obchod.Profit.ToString() : jadro.GetZiskStrata(OptionData, obchod, dateTimePicker1.Value, lblPrice.Text).ToString(),
                     JeItm(obchod),
-                    obchod.Ukonceny.ToString()
+                    obchod.Ukonceny.ToString(),
+                    obchod.CalendarRV.ToString(),
+                    obchod.Optiontype == "Calendar0_2" && !obchod.Ukonceny ? AktualRV(obchod) : ""
                  };
 
 
@@ -340,6 +362,18 @@ namespace HistoryOptions
             ltvTester.Refresh();
 
             lblProfit.Text = profit.ToString();
+        }
+
+        private string AktualRV(BackTest obchod)
+        {
+            var opt1 = OptionData.Where(x => x.QuoteDate == dateTimePicker1.Value && x.ExpirationDate == obchod.ExpirationDate)
+                        .OrderBy(x => x.Strike)
+                        .ToList();
+            var opt2 = OptionData.Where(x => x.QuoteDate == dateTimePicker1.Value && x.ExpirationDate == obchod.ExpirationDate2)
+                       .OrderBy(x => x.Strike)
+                       .ToList();
+
+            return jadro.GetAktualRv(opt1, opt2).ToString();
         }
 
         private string JeItm(BackTest obchod)
@@ -379,6 +413,8 @@ namespace HistoryOptions
             ltvTester.Columns.Add("P/L");
             ltvTester.Columns.Add("ITM");
             ltvTester.Columns.Add("Ukonceny");
+            ltvTester.Columns.Add("Calendar RV");
+            ltvTester.Columns.Add("Actual RV");
         }
 
         private void kupitCALLToolStripMenuItem_Click(object sender, EventArgs e)
@@ -523,6 +559,24 @@ namespace HistoryOptions
         private void button17_Click(object sender, EventArgs e)
         {
             textBox2.Text = jadro.PocitajStrategiuDeltaNeutral(OptionData);
+        }
+
+        private void kupitCalendar02ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var opt1 = OptionData.Where(x => x.QuoteDate == dateTimePicker1.Value && x.ExpirationDate.ToShortDateString() == tabControl1.SelectedTab.Text)
+                        .OrderBy(x => x.Strike)
+                        .ToList();
+            var opt2 = OptionData.Where(x => x.QuoteDate == dateTimePicker1.Value && x.ExpirationDate.ToShortDateString() == tabControl1.TabPages[tabControl1.SelectedIndex + 2].Text)
+                       .OrderBy(x => x.Strike)
+                       .ToList();
+
+            jadro.PridajComplexObchod("Calendar0_2", dateTimePicker1.Value, tabControl1.SelectedTab.Text, opt1, opt2, listView1.SelectedItems[0].SubItems);
+            NacitajObchody();
+        }
+
+        private void button18_Click(object sender, EventArgs e)
+        {
+            textBox2.Text = jadro.Statistiky(OptionData);
         }
     }
 }

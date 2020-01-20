@@ -10,11 +10,14 @@ namespace MarketScanner.Types
         public string Optionsymbol { get; set; }
         public string Optiontype { get; set; }
         public DateTime? ExpirationDate { get; set; }
+        public DateTime? ExpirationDate2 { get; set; }
         public DateTime StartDate { get; set; }
         public decimal Price { get; set; }
         public double? Strike { get; set; }
         public double Delta { get; set; }
         public decimal Profit { get; set; }
         public bool Ukonceny { get; set; }
+        public decimal CalendarRV { get; set; }
+        public decimal ActualRV { get; set; }
     }
 }
