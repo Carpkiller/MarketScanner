@@ -110,12 +110,41 @@ namespace IB
 
     class Program
     {
-        public static Dictionary<int, Contract> contractId;
+        public static Dictionary<int, SpecContract> contractId;
         public static int tickerId_Option_Price = 300;
+
+        public static List<SpecContract> ListToMonitor;
 
         public static int Main(string[] args)
         {
-            contractId = new Dictionary<int, Contract>();
+            contractId = new Dictionary<int, SpecContract>();
+            ListToMonitor = new List<SpecContract>();
+            //{
+            //    new SpecContract()
+            //    {
+            //        Symbol = "AAPL",
+            //        Strike = 320,
+            //        LastTradeDateOrContractMonth = "200131"
+            //    },
+            //    new SpecContract()
+            //    {
+            //        Symbol = "NFLX",
+            //        Strike = 340,
+            //        LastTradeDateOrContractMonth = "200124"
+            //    }
+            //};
+
+            var symbols = Properties.Settings.Default.Stock.Split(',');
+            for (int i = 0; i < symbols.Length; i++)
+            {
+                ListToMonitor.Add(new SpecContract()
+                {
+                    Symbol = symbols[i],
+                    Strike = double.Parse(Properties.Settings.Default.Strike.Split(',')[i]),
+                    LastTradeDateOrContractMonth = Properties.Settings.Default.ExpDate.Split(',')[i]
+                }
+                );
+            }
 
             EWrapperImpl testImpl = new EWrapperImpl();
             EClientSocket clientSocket = testImpl.ClientSocket;
@@ -130,37 +159,49 @@ namespace IB
             reader.Start();
             //Once the messages are in the queue, an additional thread need to fetch them
             new Thread(() => { while (clientSocket.IsConnected()) { readerSignal.waitForSignal(); reader.processMsgs(); } }) { IsBackground = true }.Start();
-
-            clientSocket.reqMarketDataType(2);
-            int tickerId = 100;
-            getStockPrice(clientSocket, "NQ", tickerId);
-
-
-
-            int tickerId_Option = 200;
-            string expDate = "20200320";
-            getContractDetails(clientSocket, "NQ", tickerId_Option, expDate);
-
-            while (contractId.Count == 0)
-            {
-            }
-
-            Thread.Sleep(500);
-
-            Console.WriteLine("=====================================");
-            Console.WriteLine("Contract Id set to: " + contractId);
-            Console.WriteLine();
             
+            int tickerId = 100;
+            int tickerId_Option = 200;
 
-            foreach (var contId in contractId)
+            foreach (var stock in ListToMonitor)
             {
-                Console.WriteLine($"ContractId {contId.Value.ConId} , tickerId {contId.Key}");
-                getOptionPrice(clientSocket, "NQ", contId.Key, contId.Value.ConId);
+                Console.WriteLine($"Symbol {stock.Symbol} - {stock.LastTradeDateOrContractMonth}");
+                
+
+                stock.TickerId = tickerId++;
+                stock.TickerOptionId = tickerId_Option++;
+
+                clientSocket.reqMarketDataType(2);                
+                getStockPrice(clientSocket, stock.Symbol, stock.TickerId, stock.LastTradeDateOrContractMonth);
+
+                
+                string expDate = stock.LastTradeDateOrContractMonth;
+                getContractDetails(clientSocket, stock.Symbol, stock.TickerOptionId, expDate, stock.Strike);
+
+                while (contractId.Count == 0)
+                {
+                }
+
+                Thread.Sleep(500);
+
+                Console.WriteLine("=====================================");
+                Console.WriteLine("Contract Id set to: " + contractId);
+
+                foreach (var contId in contractId)
+                {
+                    Console.WriteLine($"ContractId {contId.Value.ConId} , tickerId {contId.Key}");
+                    getOptionPrice(clientSocket, stock.Symbol, contId.Key, contId.Value.ConId, stock.Strike);
+                }
             }
 
             Console.ReadKey();
-            clientSocket.cancelMktData(tickerId);
-            clientSocket.cancelMktData(tickerId_Option);
+
+            foreach (var stock in ListToMonitor)
+            {
+                clientSocket.cancelMktData(stock.TickerId);
+                clientSocket.cancelMktData(stock.TickerOptionId);
+            }
+
             Console.WriteLine("Disconnecting...");
             clientSocket.eDisconnect();
             return 0;
@@ -169,7 +210,8 @@ namespace IB
 
         internal static void optionsDetailHandler(int tickerId, int field, double impliedVolatility, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice)
         {
-            if (field == 10 || field == 11)
+            // bid 10
+            if (field == 13) 
             {
                 Console.WriteLine("TickOptionComputation. TickerId: " + tickerId + ", field: " + field +
                                   ", ImpliedVolatility: " + impliedVolatility + ", Delta: " + delta
@@ -178,51 +220,70 @@ namespace IB
                                   ", Gamma: " + gamma +
                                   ", Vega: " + vega + ", Theta: " + theta + ", UnderlyingPrice: " + undPrice);
 
+                contractId[tickerId].Bid = optPrice;
+
                 File.AppendAllText($"{DateTime.Now.ToShortDateString()}_{contractId[tickerId].Symbol}_{contractId[tickerId].Right}_{contractId[tickerId].Strike}.txt", 
-                    $"{DateTime.Now.ToLongTimeString()}_{contractId[tickerId].Symbol}_{contractId[tickerId].Right}_{contractId[tickerId].Strike} - {optPrice}-{impliedVolatility}-" +
-                    $"{delta}-{gamma}-{vega}-{theta}-{undPrice} {Environment.NewLine}");
+                    $"{DateTime.Now.ToString("HH:mm:ss")}|{contractId[tickerId].Symbol}|{contractId[tickerId].Right}|{contractId[tickerId].Strike}|{contractId[tickerId].Bid}|{contractId[tickerId].Ask}|{impliedVolatility}|" +
+                    $"{delta}|{gamma}|{vega}|{theta}|{undPrice} {Environment.NewLine}");
+            }
+
+            // ask 11
+            if (field == 13)
+            {
+                Console.WriteLine("TickOptionComputation. TickerId: " + tickerId + ", field: " + field +
+                                  ", ImpliedVolatility: " + impliedVolatility + ", Delta: " + delta
+                                  + ", OptionPrice: " + optPrice +
+                                  ", pvDividend: " + pvDividend +
+                                  ", Gamma: " + gamma +
+                                  ", Vega: " + vega + ", Theta: " + theta + ", UnderlyingPrice: " + undPrice);
+
+                contractId[tickerId].Ask = optPrice;
+
+                File.AppendAllText($"{DateTime.Now.ToShortDateString()}_{contractId[tickerId].Symbol}_{contractId[tickerId].Right}_{contractId[tickerId].Strike}.txt",
+                    $"{DateTime.Now.ToString("HH:mm:ss")}|{contractId[tickerId].Symbol}|{contractId[tickerId].Right}|{contractId[tickerId].Strike}|{contractId[tickerId].Bid}|{contractId[tickerId].Ask}|{impliedVolatility}|" +
+                    $"{delta}|{gamma}|{vega}|{theta}|{undPrice} {Environment.NewLine}");
             }
         }
 
-        private static void getStockPrice(EClientSocket client, string symbol, int tickerId)
+        private static void getStockPrice(EClientSocket client, string symbol, int tickerId, string lastTradeDateOrContractMonth)
         {
             List<TagValue> mktDataOptions = new List<TagValue>();
             Contract contract = new Contract();
 
             contract.Symbol = symbol;
-            contract.SecType = "FUT";
-            contract.Exchange = "GLOBEX";
+            contract.SecType = "STK";
+            contract.Exchange = "SMART";
             contract.Currency = "USD";
-            contract.LastTradeDateOrContractMonth = "20200320";
+            //contract.LastTradeDateOrContractMonth = lastTradeDateOrContractMonth;
             client.reqMktData(tickerId, contract, "", false, false, mktDataOptions);
             Thread.Sleep(10);
         }
 
-        private static void getOptionPrice(EClientSocket client, string symbol, int tickerId, int conId)
+        private static void getOptionPrice(EClientSocket client, string symbol, int tickerId, int conId, double strike)
         {
             List<TagValue> mktDataOptions = new List<TagValue>();
             Contract contract = new Contract();
             contract.Symbol = symbol;
             contract.SecType = "OPT";
-            contract.Exchange = "GLOBEX";
+            contract.Exchange = "SMART";
             contract.Currency = "USD";
             contract.ConId = conId;
-            contract.Strike = 9170;
+            contract.Strike = strike;
 
             client.reqMktData(tickerId, contract, "", false, false, mktDataOptions);
         }
 
-        private static void getContractDetails(EClientSocket client, string symbol, int tickerId, string expDate)
+        private static void getContractDetails(EClientSocket client, string symbol, int tickerId, string expDate, double strike)
         {
             Contract contract = new Contract();
             contract.Symbol = symbol;
-            contract.SecType = "FOP";
-            contract.Exchange = "GLOBEX";
+            contract.SecType = "OPT";
+            contract.Exchange = "SMART";
             contract.Currency = "USD";
-            contract.Multiplier = "20";
+            contract.Multiplier = "100";
             //contract.Exchange = "BOX";
             contract.LastTradeDateOrContractMonth = expDate;
-            contract.Strike = 9170;
+            contract.Strike = strike;
             //contract.Right = "C";
 
             client.reqContractDetails(tickerId, contract);
@@ -240,10 +301,10 @@ namespace IB
             Console.WriteLine("ContractDetails. ReqId: " + reqId + " - " + contractDetails.Contract.Symbol + ", " + contractDetails.Contract.SecType + ", ConId: " 
                               + contractDetails.Contract.ConId + " @ " + contractDetails.Contract.Exchange + ", Strike:  " + contractDetails.Contract.Strike 
                               + ", Right: " + contractDetails.Contract.Right);
-            if (contractDetails.Contract.Strike == 9170)
+            if (contractDetails.Contract.Strike == ListToMonitor.Single(x => x.TickerOptionId == reqId).Strike)
             {
                 contractId.Add(tickerId_Option_Price++,
-                    new Contract()
+                    new SpecContract()
                     {
                         Strike = contractDetails.Contract.Strike,
                         Symbol = contractDetails.Contract.Symbol,
